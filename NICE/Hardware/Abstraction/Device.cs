@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using NICE.Layer2;
 
-namespace NICE
+namespace NICE.Hardware.Abstraction
 {
     public abstract class Device
     {

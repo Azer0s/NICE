@@ -1,6 +1,8 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkInterfaceCommunicationEmulator", "NetworkInterfaceCommunicationEmulator\NetworkInterfaceCommunicationEmulator.csproj", "{33B23F45-F3FE-434A-B355-75A3FE0C2D28}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetEmu", "NetEmu\NetEmu.csproj", "{E4922F1D-8FD8-45F5-B5DD-371CBB768C4D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NICE", "NICE\NICE.csproj", "{163B5298-B02D-4F71-A1D8-41B6E7FF0189}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -8,9 +10,13 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{33B23F45-F3FE-434A-B355-75A3FE0C2D28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{33B23F45-F3FE-434A-B355-75A3FE0C2D28}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{33B23F45-F3FE-434A-B355-75A3FE0C2D28}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{33B23F45-F3FE-434A-B355-75A3FE0C2D28}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E4922F1D-8FD8-45F5-B5DD-371CBB768C4D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E4922F1D-8FD8-45F5-B5DD-371CBB768C4D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E4922F1D-8FD8-45F5-B5DD-371CBB768C4D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E4922F1D-8FD8-45F5-B5DD-371CBB768C4D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{163B5298-B02D-4F71-A1D8-41B6E7FF0189}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{163B5298-B02D-4F71-A1D8-41B6E7FF0189}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{163B5298-B02D-4F71-A1D8-41B6E7FF0189}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{163B5298-B02D-4F71-A1D8-41B6E7FF0189}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

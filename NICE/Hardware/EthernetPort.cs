@@ -1,22 +1,20 @@
 using System;
-using System.Linq;
 using NICE.Layer2;
+// ReSharper disable InconsistentNaming
 
-namespace NICE
+namespace NICE.Hardware
 {
     public class EthernetPort
     {
-        private EthernetDevice _device;
         private EthernetPort _connectedTo;
-        public byte[] MACAddress { get; }
-        private Action<EthernetFrame, EthernetDevice> _onReceiveAction;
+        public byte[] MACAddress { get; private set; }
+        private Action<EthernetFrame> _onReceiveAction;
 
-        public void Init(EthernetDevice ethernetDevice)
+        public void Init()
         {
             var vendorBytes = new byte[]{0x10,0x14,0x20};
             var guid = Guid.NewGuid().ToByteArray();
             MACAddress = new[] {vendorBytes[0], vendorBytes[1], vendorBytes[2], guid[0], guid[1], guid[2]};
-            _device = ethernetDevice;
         }
 
         public void ConnectTo(EthernetPort ethernetPort)
@@ -27,7 +25,7 @@ namespace NICE
 
         public void Receive(EthernetFrame frame)
         {
-            _onReceiveAction(frame, _device);
+            _onReceiveAction(frame);
         }
 
         public void Send(EthernetFrame frame)
@@ -35,7 +33,7 @@ namespace NICE
             _connectedTo.Receive(frame);
         }
 
-        public void OnReceive(Action<EthernetFrame, EthernetDevice> action)
+        public void OnReceive(Action<EthernetFrame> action)
         {
             _onReceiveAction = action;
         }
