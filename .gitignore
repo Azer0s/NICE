@@ -16,3 +16,5 @@ NICE/bin/Debug/netcoreapp2\.2/
 NetworkInterfaceCommunicationEmulator/obj/
 
 *.user
+
+NICE/obj/
