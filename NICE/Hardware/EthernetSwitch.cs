@@ -6,7 +6,7 @@ namespace NICE.Hardware
     {
         public EthernetSwitch() : base(null)
         {
-            _onReceive = (frame, port) =>
+            OnReceive = (frame, port) =>
             {
                 //TODO: If an untagged frame comes in, tag it
                 //TODO: Send the frame to the corresponding port of the dst mac

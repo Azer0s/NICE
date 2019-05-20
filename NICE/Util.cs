@@ -23,7 +23,7 @@ namespace NICE
 
         public static byte[] GetFCS(EthernetFrame ethernetFrame)
         {
-            return GetFCS(ethernetFrame.GetBytes().Skip(8).ToList());
+            return GetFCS(ethernetFrame.GetBytes());
         }
 
         private static readonly uint[] crctab =
@@ -101,15 +101,16 @@ namespace NICE
             return output;
         }
         
-        public static byte[] GetFCS(List<byte> bytes)
+        public static byte[] GetFCS(byte[] bytes)
         {
+            var byteList = bytes.ToList();
+            //Remove preamble
+            byteList.RemoveRange(0,8);
+            
             //Remove empty FCS bytes
-            bytes.RemoveAt(bytes.Count - 1);
-            bytes.RemoveAt(bytes.Count - 1);
-            bytes.RemoveAt(bytes.Count - 1);
-            bytes.RemoveAt(bytes.Count - 1);
+            byteList.RemoveRange(byteList.Count-4, 4);
 
-            return CRC32(bytes);
+            return CRC32(byteList);
         }
     }
 }

@@ -1,15 +1,25 @@
 using System;
+using System.Threading.Tasks;
 using NICE.Layer2;
 // ReSharper disable InconsistentNaming
+// ReSharper disable MemberCanBePrivate.Global
 
 namespace NICE.Hardware
 {
     public class EthernetPort
     {
-        private EthernetPort _connectedTo;
         public byte[] MACAddress { get; private set; }
-        private Action<EthernetFrame> _onReceiveAction;
+        private Action<byte[]> _onReceiveAction;
+        private EthernetPort _connectedTo;
+        private readonly Action<EthernetPort> _onConnectAction;
+        private readonly Action<EthernetPort> _onDisconnectAction;
 
+        public EthernetPort(Action<EthernetPort> onConnect, Action<EthernetPort> onDisconnect)
+        {
+            _onConnectAction = onConnect;
+            _onDisconnectAction = onDisconnect;
+        }
+        
         public void Init()
         {
             var vendorBytes = new byte[]{0x10,0x14,0x20};
@@ -21,19 +31,34 @@ namespace NICE.Hardware
         {
             _connectedTo = ethernetPort;
             ethernetPort._connectedTo = this;
+            _onConnectAction(ethernetPort);
+            ethernetPort._onConnectAction(this);
         }
 
-        public void Receive(EthernetFrame frame)
+        public void Disconnect()
         {
-            _onReceiveAction(frame);
+            _onDisconnectAction(_connectedTo);
+            _connectedTo._onDisconnectAction(this);
+            _connectedTo._connectedTo = null;
+            _connectedTo = null;
+        }
+
+        public void Receive(byte[] bytes)
+        {
+            _onReceiveAction(bytes);
+        }
+
+        public void Send(byte[] bytes)
+        {
+            _connectedTo.Receive(bytes);
         }
 
         public void Send(EthernetFrame frame)
         {
-            _connectedTo.Receive(frame);
+            Send(frame.GetBytes());
         }
 
-        public void OnReceive(Action<EthernetFrame> action)
+        public void OnReceive(Action<byte[]> action)
         {
             _onReceiveAction = action;
         }

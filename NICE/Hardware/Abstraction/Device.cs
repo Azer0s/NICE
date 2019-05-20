@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using NICE.Layer2;
+// ReSharper disable InconsistentNaming
 
 namespace NICE.Hardware.Abstraction
 {
@@ -11,11 +12,13 @@ namespace NICE.Hardware.Abstraction
     {
         private readonly Dictionary<string, EthernetPort> _ports = new Dictionary<string, EthernetPort>();
 
-        protected Action<EthernetFrame, EthernetPort> _onReceive;
-
+        protected readonly Dictionary<string, byte[]> MACTable = new Dictionary<string, byte[]>();
+        
+        protected Action<EthernetFrame, EthernetPort> OnReceive;
+        
         protected Device(Action<EthernetFrame, EthernetPort> onReceive)
         {
-            _onReceive = onReceive;
+            OnReceive = onReceive;
         }
 
         public EthernetPort this[string name]
@@ -27,9 +30,13 @@ namespace NICE.Hardware.Abstraction
                     return _ports[name];
                 }
                 
-                _ports[name] = new EthernetPort();
+                _ports[name] = new EthernetPort(port => { MACTable[name] = port.MACAddress; }, port => MACTable.Remove(name));
 
-                _ports[name].OnReceive(frame => _onReceive(frame, _ports[name]));
+                _ports[name].OnReceive(bytes =>
+                {
+                    var frame = EthernetFrame.FromBytes(bytes);
+                    OnReceive(frame, _ports[name]);
+                });
                 
                 return _ports[name];
             }
