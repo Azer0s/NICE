@@ -41,7 +41,7 @@ namespace NICE.Hardware
             var vendorBytes = new byte[]{0x10,0x14,0x20};
             var guid = Guid.NewGuid().ToByteArray();
             MACAddress = new[] {vendorBytes[0], vendorBytes[1], vendorBytes[2], guid[0], guid[1], guid[2]};
-            Log.Trace(_device.Hostname, $"Initialized port {Name} with MAC Address {string.Join(":", MACAddress.Select(a => a.ToString("X2")))}");
+            Log.Trace(_device.Hostname, $"Initialized port {Name} with MAC Address {MACAddress.ToMACAddressString()}");
         }
 
         public void ConnectTo(EthernetPort ethernetPort)
@@ -74,6 +74,7 @@ namespace NICE.Hardware
 
         public void Send(EthernetFrame frame)
         {
+            Log.Trace(_device.Hostname, $"Sending Ethernet frame to {frame.Dst.ToMACAddressString()} from port {Name}");
             Send(frame.GetBytes());
         }
 

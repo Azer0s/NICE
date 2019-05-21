@@ -45,8 +45,8 @@ namespace NICE.Hardware
                           .Select(a => a.Value).FirstOr(new Dictionary<byte[], string>())
                             .Any(a => a.Key.SequenceEqual(frame.Src))))
                 {
-                    Log.Warn(Hostname, $"Unknown MAC Address {string.Join(":", frame.Src.Select(a => a.ToString("X2")))} for VLAN {string.Join(":", frame.Tag.Select(a => a.ToString("X2")))}");
-                    Log.Debug(Hostname, $"Adding MAC Address {string.Join(":", frame.Src.Select(a => a.ToString("X2")))} to MAC Address table for VLAN {string.Join(":", frame.Tag.Select(a => a.ToString("X2")))}...");
+                    Log.Warn(Hostname, $"Unknown MAC Address {frame.Src.ToMACAddressString()} for VLAN {frame.Tag.ToMACAddressString()}");
+                    Log.Debug(Hostname, $"Adding MAC Address {frame.Src.ToMACAddressString()} to MAC Address table for VLAN {frame.Tag.ToMACAddressString())}...");
 
                     if (!MACTable.Any(a => a.Key.SequenceEqual(frame.Tag)))
                     {
@@ -71,6 +71,12 @@ namespace NICE.Hardware
                     //Send to all trunk ports
                     var dstPorts = _switchPortInfos.Where(a => a.Key != port.Name && (a.Value.Vlan.SequenceEqual(frame.Tag) || a.Value.Mode == AccessMode.TRUNK)).Select(a => a.Key);
 
+                    if (!dstPorts.Any())
+                    {
+                        Log.Error(Hostname, "Can't send a frame to any possible port (Possible VLAN mismatch)! Dropping!");
+                        return;
+                    }
+                    
                     foreach (var s in dstPorts)
                     {
                         base[s].Send(frame);
@@ -109,7 +115,7 @@ namespace NICE.Hardware
 
             if (vlan != null)
             {
-                Log.Debug(Hostname, $"Accessing VLAN {string.Join(":", vlan.Select(a => a.ToString("X2")))} on port {port}");
+                Log.Debug(Hostname, $"Accessing VLAN {vlan.ToMACAddressString()} on port {port}");
             }
             else
             {

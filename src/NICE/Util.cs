@@ -14,6 +14,11 @@ namespace NICE
                 return t;
             return alternate;
         }
+
+        public static string ToMACAddressString(this byte[] bytes)
+        {
+            return string.Join(":", bytes.Select(a => a.ToString("X2")));
+        }
         
         private static bool CompareBytes(byte[] bytes, byte first, byte second)
         {
