@@ -15,6 +15,7 @@ The Network Interface Communication Emulator (or NICE) is a C# framework which a
   - [x] Switching
 - [ ] Layer 3
   - [ ] IPv4
+  - [ ] ARP
   - [ ] ICMP
   - [ ] Routing
   - [ ] (Eventually: routing protocols)
