@@ -6,6 +6,7 @@ namespace NICE
     public static class Log
     {
         private static Level show_level = Level.TRACE;
+        private static Groups groups_level = Groups.SHOW;
         
         private static void Write(string hostname, Level level, string message, ConsoleColor color)
         {
@@ -28,6 +29,12 @@ namespace NICE
             WARN = 3,
             ERROR = 4,
             FATAL = 5
+        }
+
+        public enum Groups
+        {
+            SHOW,
+            HIDE
         }
 
         public static void Trace(string hostname, string message)
@@ -75,9 +82,19 @@ namespace NICE
             Write(hostname, Level.FATAL, message, ConsoleColor.DarkRed);
         }
 
-        public static void SetLevel(Level loglevel)
+        public static void SetLevel(Level loglevel, Groups groups)
         {
             show_level = loglevel;
+            groups_level = groups;
+        }
+
+        public static void Group(string group)
+        {
+            if (groups_level != Groups.SHOW) return;
+            
+            Console.ForegroundColor = ConsoleColor.Magenta;
+            Console.WriteLine($"+++{group}+++");
+            Console.ResetColor();
         }
     }
 }

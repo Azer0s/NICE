@@ -1,4 +1,8 @@
 all:
+	@$(MAKE) nice
+	@$(MAKE) run
+
+nice:
 	@echo
 	@echo "\033[4m\033[1mBuilding NICE\033[0m"
 	@echo

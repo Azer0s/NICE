@@ -15,7 +15,7 @@ namespace NetEmu
         
         static void Main()
         {
-            //Log.SetLevel(Log.Level.INFO);
+            Log.SetLevel(Log.Level.TRACE, Log.Groups.SHOW);
             Vlan.Register(1, "DEFAULT");
 
             /*
@@ -32,11 +32,15 @@ namespace NetEmu
              * PC2 --- eth0/1
              */
             
+            Log.Group("Initialize devices");
+            
             var pc1 = new EthernetDevice("pc1");
             var pc2 = new EthernetDevice("pc2");
 
             var sw1 = new EthernetSwitch("sw1");
             var sw2 = new EthernetSwitch("sw2");
+            
+            Log.Group("Initialize ports");
             
             //pc ports
             pc1[ETH01].Init();
@@ -52,6 +56,8 @@ namespace NetEmu
             sw1[FA02].Init();
             sw2[FA02].Init();
             
+            Log.Group("Connect ports");
+            
             //Connect the pcs to the switches
             pc1[ETH01].ConnectTo(sw1[FA01]);
             pc2[ETH01].ConnectTo(sw2[FA01]);
@@ -59,6 +65,7 @@ namespace NetEmu
             //Connect the switches to each other
             sw1[FA02].ConnectTo(sw2[FA02]);
             
+            Log.Group("Set switchport modes");
             //Set the ports from pc to switch to access vlan 1
             sw1.SetPort(FA01, EthernetSwitch.AccessMode.ACCESS, Vlan.Get(1));
             sw2.SetPort(FA01, EthernetSwitch.AccessMode.ACCESS, Vlan.Get(1));
@@ -68,14 +75,16 @@ namespace NetEmu
             sw2.SetPort(FA02, EthernetSwitch.AccessMode.TRUNK, null);
             
             //Learn MAC Addresses
+            Log.Group("Learn MAC Addresses");
             pc1[ETH01].Send(new EthernetFrame(Constants.ETHERNET_BROADCAST_PORT, pc1[ETH01], null, EtherType.IPv4, new RawLayer3Packet(new byte[100]), false));
             pc2[ETH01].Send(new EthernetFrame(Constants.ETHERNET_BROADCAST_PORT, pc2[ETH01], null, EtherType.IPv4, new RawLayer3Packet(new byte[100]), false));
             
+            Log.Group("Send Ethernet frame over learned ports");
             pc1[ETH01].Send(new EthernetFrame(pc2[ETH01], pc1[ETH01], null, EtherType.IPv4, new RawLayer3Packet(new byte[100]), false));
             
             pc2[ETH01].Disconnect();
 
-            Console.ReadKey();
+            //Console.ReadKey();
         }
     }
 }
