@@ -1,8 +1,13 @@
+<img src="assets/NICE Logo.png" alt="logo" width="200" align="left"/>
+
 ## Network Interface Communication Emulator
+
+[![Build Status](https://travis-ci.org/Azer0s/NICE.svg?branch=master)](https://travis-ci.org/Azer0s/NICE)
+[![License](https://img.shields.io/badge/license-MIT-brightgreen.svg)](https://github.com/Azer0s/NICE/blob/master/LICENSE)
 
 The Network Interface Communication Emulator (or NICE) is a C# framework which allows you to emulate entire networks in code. NICE implements Ethernet and several layer 3 protocols. Furthermore, it offers several Ethernet devices like switches or routers.
 
-### NICE is still WIP, help is appreciated 
+### NICE is still (very much) WIP, help is appreciated 
 
 - [ ] Layer 2
   - [x] Ethernet
