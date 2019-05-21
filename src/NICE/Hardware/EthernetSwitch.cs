@@ -22,7 +22,7 @@ namespace NICE.Hardware
             public byte[] Vlan;
         }
 
-        private readonly Dictionary<byte[], string> MACTable = new Dictionary<byte[], string> ();
+        private readonly Dictionary<byte[] /*VLAN*/, Dictionary<byte[] /*MAC Address*/, string /*Port*/>> MACTable = new Dictionary<byte[], Dictionary<byte[], string>> ();
         private readonly Dictionary<string, SwitchPortInfo> _switchPortInfos = new Dictionary<string, SwitchPortInfo>();
         
         public EthernetSwitch(string name) : base(name,null)
@@ -31,34 +31,45 @@ namespace NICE.Hardware
             
             OnReceive = (frame, port) =>
             {
-                if (!MACTable.Any(a => a.Key.SequenceEqual(frame.Src)))
-                {
-                    Log.Warn(Hostname, $"Unknown MAC Address {string.Join(":", frame.Src.Select(a => a.ToString("X2")))}");
-                    Log.Debug(Hostname, $"Adding MAC Address {string.Join(":", frame.Src.Select(a => a.ToString("X2")))} to MAC Address table...");
-                    MACTable[frame.Src] = port.Name;
-                }
-                
                 //If an untagged frame comes in, tag it
                 if (!frame.IsTagged)
                 {
                     frame.IsTagged = true;
-                    frame.Tag = Vlan.Get(1);
-                    
+                    frame.Tag = _switchPortInfos[port.Name].Vlan ?? Vlan.Get(1);
                     frame.FCS = Util.GetFCS(frame);
+                }
+                
+                if (!(MACTable.Any(a => a.Key.SequenceEqual(frame.Tag)) 
+                      && MACTable
+                          .Where(a => a.Key.SequenceEqual(frame.Tag))
+                          .Select(a => a.Value).FirstOr(new Dictionary<byte[], string>())
+                            .Any(a => a.Key.SequenceEqual(frame.Src))))
+                {
+                    Log.Warn(Hostname, $"Unknown MAC Address {string.Join(":", frame.Src.Select(a => a.ToString("X2")))} for VLAN {string.Join(":", frame.Tag.Select(a => a.ToString("X2")))}");
+                    Log.Debug(Hostname, $"Adding MAC Address {string.Join(":", frame.Src.Select(a => a.ToString("X2")))} to MAC Address table for VLAN {string.Join(":", frame.Tag.Select(a => a.ToString("X2")))}...");
+
+                    if (!MACTable.Any(a => a.Key.SequenceEqual(frame.Tag)))
+                    {
+                        MACTable[frame.Tag] = new Dictionary<byte[], string>();
+                    }
+
+                    var id = MACTable.Where(a => a.Key.SequenceEqual(frame.Tag)).Select(a => a.Key).First();
+                    MACTable[id].Add(frame.Src, port.Name);
                 }
 
                 var dstPort = string.Empty;
                 if (!frame.Dst.SequenceEqual(Constants.ETHERNET_BROADCAST_ADDRESS))
                 {
-                    dstPort = MACTable.Where(a => a.Key.SequenceEqual(frame.Dst)).Select(a => a.Value).FirstOrDefault();
+                    dstPort = MACTable.Where(a => a.Key.SequenceEqual(frame.Tag) && a.Value.Any(b => b.Key.SequenceEqual(frame.Dst))).Select(a => a.Value.Where(b => b.Key.SequenceEqual(frame.Dst)).Select(b => b.Value).FirstOr(null)).FirstOr(null);
                 }
-
-                //TODO: Check VLANs
-                    
+                                 
+                //Flooding
                 if (string.IsNullOrEmpty(dstPort))
                 {
                     //Send to all ports except for source port
-                    var dstPorts = _switchPortInfos.Where(a => a.Key != MACTable[frame.Src]).Select(a => a.Key);
+                    //Send to all access ports in the same VLAN
+                    //Send to all trunk ports
+                    var dstPorts = _switchPortInfos.Where(a => a.Key != port.Name && (a.Value.Vlan.SequenceEqual(frame.Tag) || a.Value.Mode == AccessMode.TRUNK)).Select(a => a.Key);
 
                     foreach (var s in dstPorts)
                     {
@@ -99,6 +110,10 @@ namespace NICE.Hardware
             if (vlan != null)
             {
                 Log.Debug(Hostname, $"Accessing VLAN {string.Join(":", vlan.Select(a => a.ToString("X2")))} on port {port}");
+            }
+            else
+            {
+                vlan = Vlan.Get(1);
             }
             
             _switchPortInfos[port] = new SwitchPortInfo {Mode = mode, Vlan = vlan};

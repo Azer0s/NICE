@@ -67,7 +67,11 @@ namespace NetEmu
             sw1.SetPort(FA02, EthernetSwitch.AccessMode.TRUNK, null);
             sw2.SetPort(FA02, EthernetSwitch.AccessMode.TRUNK, null);
             
+            //Learn MAC Addresses
             pc1[ETH01].Send(new EthernetFrame(Constants.ETHERNET_BROADCAST_PORT, pc1[ETH01], null, EtherType.IPv4, new RawLayer3Packet(new byte[100]), false));
+            pc2[ETH01].Send(new EthernetFrame(Constants.ETHERNET_BROADCAST_PORT, pc2[ETH01], null, EtherType.IPv4, new RawLayer3Packet(new byte[100]), false));
+            
+            pc1[ETH01].Send(new EthernetFrame(pc2[ETH01], pc1[ETH01], null, EtherType.IPv4, new RawLayer3Packet(new byte[100]), false));
             
             pc2[ETH01].Disconnect();
 
