@@ -1,3 +1,4 @@
+using System.Linq;
 using NICE.Hardware.Abstraction;
 
 namespace NICE.Hardware
@@ -8,6 +9,12 @@ namespace NICE.Hardware
         {
             OnReceive = (frame, port) =>
             {
+                if (!frame.Dst.SequenceEqual(port.MACAddress))
+                {
+                    return;
+                }
+                
+                var type = Util.GetEtherTypeFromBytes(frame.Type);
                 //TODO: Handle all the layer 3 protocols
             };
         }

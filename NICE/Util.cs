@@ -8,6 +8,15 @@ namespace NICE
 {
     public static class Util
     {
+        private static bool CompareBytes(byte[] bytes, byte first, byte second)
+        {
+            if (bytes.Length != 2)
+            {
+                throw new ArgumentException("Invalid byte array length!", nameof(bytes));
+            }
+            return bytes[0] == first && bytes[1] == second;
+        }
+        
         public static byte[] GetBytesFromEtherType(EtherType etherType)
         {
             switch (etherType)
@@ -19,6 +28,21 @@ namespace NICE
             }
             
             throw new ArgumentOutOfRangeException(nameof(etherType), etherType, null);
+        }
+
+        public static EtherType GetEtherTypeFromBytes(byte[] bytes)
+        {
+            if (CompareBytes(bytes, 0x08, 0x00))
+            {
+                return EtherType.IPv4;
+            }
+
+            if (CompareBytes(bytes, 0x08, 0x06))
+            {
+                return EtherType.ARP;
+            }
+            
+            throw new ArgumentOutOfRangeException(nameof(bytes), bytes, null);
         }
 
         public static byte[] GetFCS(EthernetFrame ethernetFrame)
@@ -85,8 +109,8 @@ namespace NICE
         /// <summary>
         /// CRC32
         /// </summary>
-        /// <returns>4 byte CRC Checksumme</returns>
-        public static byte[] CRC32(IEnumerable<byte> Data)
+        /// <returns>4 byte CRC Checksum</returns>
+        private static byte[] CRC32(IEnumerable<byte> Data)
         {
             var crc = Data.Aggregate(0xffffffff, (current, t) => (current >> 8) ^ crctab[(current & 0xff) ^ t]);
 
@@ -100,7 +124,7 @@ namespace NICE
 
             return output;
         }
-        
+
         public static byte[] GetFCS(byte[] bytes)
         {
             var byteList = bytes.ToList();

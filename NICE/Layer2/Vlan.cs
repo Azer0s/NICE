@@ -5,21 +5,26 @@ namespace NICE.Layer2
 {
     public static class Vlan
     {
-        private static List<(int nr, string name)> _vlans = new List<(int, string)>();
+        private static readonly List<(int nr, string name)> Vlans = new List<(int, string)>();
         
         public static void Register(int nr, string name)
         {
-            if (_vlans.Exists(tuple => tuple.nr == nr && tuple.name == name))
+            if (Vlans.Exists(tuple => tuple.nr == nr && tuple.name == name))
             {
                 throw new Exception($"VLAN {nr} already exists!");
             }
             
-            _vlans.Add((nr, name));
+            Vlans.Add((nr, name));
         }
 
         public static byte[] Get(int nr)
         {
-            if (!_vlans.Exists(tuple => tuple.nr == nr))
+            if (nr == 0)
+            {
+                return new byte[2];
+            }
+            
+            if (!Vlans.Exists(tuple => tuple.nr == nr))
             {
                 throw new Exception($"VLAN {nr} does not exist!");
             }
