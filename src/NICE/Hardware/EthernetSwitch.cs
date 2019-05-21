@@ -46,7 +46,7 @@ namespace NICE.Hardware
                             .Any(a => a.Key.SequenceEqual(frame.Src))))
                 {
                     Log.Warn(Hostname, $"Unknown MAC Address {frame.Src.ToMACAddressString()} for VLAN {frame.Tag.ToMACAddressString()}");
-                    Log.Debug(Hostname, $"Adding MAC Address {frame.Src.ToMACAddressString()} to MAC Address table for VLAN {frame.Tag.ToMACAddressString())}...");
+                    Log.Debug(Hostname, $"Adding MAC Address {frame.Src.ToMACAddressString()} to MAC Address table for VLAN {frame.Tag.ToMACAddressString()}...");
 
                     if (!MACTable.Any(a => a.Key.SequenceEqual(frame.Tag)))
                     {
