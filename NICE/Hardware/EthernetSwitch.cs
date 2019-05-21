@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using NICE.Hardware.Abstraction;
 using NICE.Layer2;
 
@@ -24,12 +25,16 @@ namespace NICE.Hardware
         private readonly Dictionary<byte[], string> MACTable = new Dictionary<byte[], string> ();
         private readonly Dictionary<string, SwitchPortInfo> _switchPortInfos = new Dictionary<string, SwitchPortInfo>();
         
-        public EthernetSwitch() : base(null)
-        {
+        public EthernetSwitch(string name) : base(name,null)
+        {            
+            Log.Info(Hostname, "Initializing switch...");
+            
             OnReceive = (frame, port) =>
             {
                 if (!MACTable.Any(a => a.Key.SequenceEqual(frame.Src)))
                 {
+                    Log.Warn(Hostname, $"Unknown MAC Address {string.Join(":", frame.Src.Select(a => a.ToString("X2")))}");
+                    Log.Debug(Hostname, $"Adding MAC Address {string.Join(":", frame.Src.Select(a => a.ToString("X2")))} to MAC Address table...");
                     MACTable[frame.Src] = port.Name;
                 }
                 
@@ -41,9 +46,14 @@ namespace NICE.Hardware
                     
                     frame.FCS = Util.GetFCS(frame);
                 }
-                
-                //TODO: Check VLANs           
-                var dstPort = MACTable.Where(a => a.Key.SequenceEqual(frame.Dst)).Select(a => a.Value).FirstOrDefault();
+
+                var dstPort = string.Empty;
+                if (!frame.Dst.SequenceEqual(Constants.ETHERNET_BROADCAST_ADDRESS))
+                {
+                    dstPort = MACTable.Where(a => a.Key.SequenceEqual(frame.Dst)).Select(a => a.Value).FirstOrDefault();
+                }
+
+                //TODO: Check VLANs
                     
                 if (string.IsNullOrEmpty(dstPort))
                 {
@@ -77,12 +87,18 @@ namespace NICE.Hardware
 
         public void SetPort(string port, AccessMode mode, byte[] vlan)
         {
+            Log.Info(Hostname, $"Setting port {port} to {mode.ToString().ToLower()} mode");
             if (mode == AccessMode.TRUNK)
             {
                 if (vlan != null)
                 {
                     throw new Exception("Can't set VLAN for a trunking port!");
                 }
+            }
+
+            if (vlan != null)
+            {
+                Log.Debug(Hostname, $"Accessing VLAN {string.Join(":", vlan.Select(a => a.ToString("X2")))} on port {port}");
             }
             
             _switchPortInfos[port] = new SwitchPortInfo {Mode = mode, Vlan = vlan};

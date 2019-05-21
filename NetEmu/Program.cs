@@ -1,4 +1,6 @@
-﻿using NICE.Hardware;
+﻿using System;
+using NICE;
+using NICE.Hardware;
 using NICE.Layer2;
 using NICE.Layer3;
 using NICE.Layer4;
@@ -13,6 +15,7 @@ namespace NetEmu
         
         static void Main()
         {
+            //Log.SetLevel(Log.Level.INFO);
             Vlan.Register(1, "DEFAULT");
 
             /*
@@ -29,11 +32,11 @@ namespace NetEmu
              * PC2 --- eth0/1
              */
             
-            var pc1 = new EthernetDevice();
-            var pc2 = new EthernetDevice();
+            var pc1 = new EthernetDevice("pc1");
+            var pc2 = new EthernetDevice("pc2");
 
-            var sw1 = new EthernetSwitch();
-            var sw2 = new EthernetSwitch();
+            var sw1 = new EthernetSwitch("sw1");
+            var sw2 = new EthernetSwitch("sw2");
             
             //pc ports
             pc1[ETH01].Init();
@@ -64,9 +67,11 @@ namespace NetEmu
             sw1.SetPort(FA02, EthernetSwitch.AccessMode.TRUNK, null);
             sw2.SetPort(FA02, EthernetSwitch.AccessMode.TRUNK, null);
             
-            pc1[ETH01].Send(new EthernetFrame(pc2[ETH01], pc1[ETH01], null, EtherType.IPv4, new RawLayer3Packet(new byte[100]), false));
+            pc1[ETH01].Send(new EthernetFrame(Constants.ETHERNET_BROADCAST_PORT, pc1[ETH01], null, EtherType.IPv4, new RawLayer3Packet(new byte[100]), false));
             
             pc2[ETH01].Disconnect();
+
+            Console.ReadKey();
         }
     }
 }

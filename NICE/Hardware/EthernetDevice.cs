@@ -4,9 +4,10 @@ using NICE.Hardware.Abstraction;
 namespace NICE.Hardware
 {
     public class EthernetDevice : Device
-    {
-        public EthernetDevice() : base(null)
+    {        
+        public EthernetDevice(string name) : base(name,null)
         {
+            Log.Info(Hostname, "Initializing end device...");
             OnReceive = (frame, port) =>
             {
                 if (!frame.Dst.SequenceEqual(port.MACAddress))

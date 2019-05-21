@@ -12,13 +12,15 @@ namespace NICE.Hardware.Abstraction
     {
         private readonly Dictionary<string, EthernetPort> _ports = new Dictionary<string, EthernetPort>();
 
+        public readonly string Hostname;
         protected readonly Func<string, Action<EthernetPort>> OnConnect;
         protected readonly Func<string, Action<EthernetPort>> OnDisconnect;
         
         protected Action<EthernetFrame, EthernetPort> OnReceive;
         
-        protected Device(Action<EthernetFrame, EthernetPort> onReceive, Func<string, Action<EthernetPort>> onConnect = null, Func<string, Action<EthernetPort>> onDisconnect = null)
+        protected Device(string hostname, Action<EthernetFrame, EthernetPort> onReceive, Func<string, Action<EthernetPort>> onConnect = null, Func<string, Action<EthernetPort>> onDisconnect = null)
         {
+            Hostname = hostname;
             OnReceive = onReceive;
             if (onConnect == null)
             {
@@ -48,7 +50,8 @@ namespace NICE.Hardware.Abstraction
                     return _ports[name];
                 }
                 
-                _ports[name] = new EthernetPort(name, OnConnect(name), OnDisconnect(name));
+                Log.Debug(Hostname, $"Creating new port {name}...");
+                _ports[name] = new EthernetPort(name, this, OnConnect(name), OnDisconnect(name));
 
                 _ports[name].OnReceive(bytes =>
                 {
