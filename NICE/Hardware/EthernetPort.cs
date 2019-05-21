@@ -9,15 +9,17 @@ namespace NICE.Hardware
     public class EthernetPort
     {
         public byte[] MACAddress { get; private set; }
+        public readonly string Name;
         private Action<byte[]> _onReceiveAction;
         private EthernetPort _connectedTo;
         private readonly Action<EthernetPort> _onConnectAction;
         private readonly Action<EthernetPort> _onDisconnectAction;
 
-        public EthernetPort(Action<EthernetPort> onConnect, Action<EthernetPort> onDisconnect)
+        public EthernetPort(string name, Action<EthernetPort> onConnect, Action<EthernetPort> onDisconnect)
         {
             _onConnectAction = onConnect;
             _onDisconnectAction = onDisconnect;
+            Name = name;
         }
         
         public void Init()

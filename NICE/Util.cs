@@ -8,6 +8,13 @@ namespace NICE
 {
     public static class Util
     {
+        public static T FirstOr<T>(this IEnumerable<T> source, T alternate)
+        {
+            foreach(var t in source)
+                return t;
+            return alternate;
+        }
+        
         private static bool CompareBytes(byte[] bytes, byte first, byte second)
         {
             if (bytes.Length != 2)

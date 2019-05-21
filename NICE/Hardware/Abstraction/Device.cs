@@ -12,13 +12,31 @@ namespace NICE.Hardware.Abstraction
     {
         private readonly Dictionary<string, EthernetPort> _ports = new Dictionary<string, EthernetPort>();
 
-        protected readonly Dictionary<string, byte[]> MACTable = new Dictionary<string, byte[]>();
+        protected readonly Func<string, Action<EthernetPort>> OnConnect;
+        protected readonly Func<string, Action<EthernetPort>> OnDisconnect;
         
         protected Action<EthernetFrame, EthernetPort> OnReceive;
         
-        protected Device(Action<EthernetFrame, EthernetPort> onReceive)
+        protected Device(Action<EthernetFrame, EthernetPort> onReceive, Func<string, Action<EthernetPort>> onConnect = null, Func<string, Action<EthernetPort>> onDisconnect = null)
         {
             OnReceive = onReceive;
+            if (onConnect == null)
+            {
+                OnConnect = s => { return ethernetPort => {}; };
+            }
+            else
+            {
+                OnConnect = onConnect;
+            }
+
+            if (onDisconnect == null)
+            {
+                OnDisconnect = s => { return ethernetPort => {}; };
+            }
+            else
+            {
+                OnDisconnect = onDisconnect;
+            }
         }
 
         public EthernetPort this[string name]
@@ -30,7 +48,7 @@ namespace NICE.Hardware.Abstraction
                     return _ports[name];
                 }
                 
-                _ports[name] = new EthernetPort(port => { MACTable[name] = port.MACAddress; }, port => MACTable.Remove(name));
+                _ports[name] = new EthernetPort(name, OnConnect(name), OnDisconnect(name));
 
                 _ports[name].OnReceive(bytes =>
                 {

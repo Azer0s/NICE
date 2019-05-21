@@ -20,13 +20,19 @@ namespace NICE.Hardware
             public AccessMode Mode;
             public byte[] Vlan;
         }
-        
+
+        private readonly Dictionary<byte[], string> MACTable = new Dictionary<byte[], string> ();
         private readonly Dictionary<string, SwitchPortInfo> _switchPortInfos = new Dictionary<string, SwitchPortInfo>();
         
         public EthernetSwitch() : base(null)
         {
             OnReceive = (frame, port) =>
             {
+                if (!MACTable.Any(a => a.Key.SequenceEqual(frame.Src)))
+                {
+                    MACTable[frame.Src] = port.Name;
+                }
+                
                 //If an untagged frame comes in, tag it
                 if (!frame.IsTagged)
                 {
@@ -36,14 +42,13 @@ namespace NICE.Hardware
                     frame.FCS = Util.GetFCS(frame);
                 }
                 
-                //TODO: Check VLANs
-                
-                var dstPort = _switchPortInfos.Where(a => MACTable[a.Key].SequenceEqual(frame.Dst)).Select(a => a.Key).FirstOrDefault();
+                //TODO: Check VLANs           
+                var dstPort = MACTable.Where(a => a.Key.SequenceEqual(frame.Dst)).Select(a => a.Value).FirstOrDefault();
                     
                 if (string.IsNullOrEmpty(dstPort))
                 {
-                    //Send to all trunk ports except for source port
-                    var dstPorts = _switchPortInfos.Where(a => !MACTable[a.Key].SequenceEqual(frame.Src) && a.Value.Mode == AccessMode.TRUNK).Select(a => a.Key);
+                    //Send to all ports except for source port
+                    var dstPorts = _switchPortInfos.Where(a => a.Key != MACTable[frame.Src]).Select(a => a.Key);
 
                     foreach (var s in dstPorts)
                     {
@@ -54,9 +59,6 @@ namespace NICE.Hardware
                 {
                     base[dstPort].Send(frame);
                 }
-                
-                //TODO: Send the frame to the corresponding port of the dst mac
-                //TODO: Like...we gotta find out which MAC belongs to which switch port
             };
         }
         
