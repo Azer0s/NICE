@@ -68,7 +68,7 @@ namespace NICE.Hardware
             _onReceiveAction(bytes);
         }
 
-        public void Send(byte[] bytes,  bool sendSync, bool log = true)
+        public void Send(byte[] bytes,  bool sendAsync, bool log = true)
         {
             if (!_device.PowerOn)
             {
@@ -95,7 +95,7 @@ namespace NICE.Hardware
                 Global.Operations--;
             });
 
-            if (!sendSync)
+            if (!sendAsync)
             {
                 action();
             }
@@ -106,10 +106,10 @@ namespace NICE.Hardware
             }
         }
 
-        public void Send(EthernetFrame frame, bool sendSync)
+        public void Send(EthernetFrame frame, bool sendAsync)
         {
             Log.Trace(_device.Hostname, $"Sending Ethernet frame to {frame.Dst.ToMACAddressString()} from port {Name}");
-            Send(frame.GetBytes(), sendSync, false);
+            Send(frame.GetBytes(), sendAsync, false);
         }
 
         public void SendSync(EthernetFrame frame)
