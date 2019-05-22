@@ -9,14 +9,14 @@ namespace NICE.Layer4
     {
         public byte[] SourcePort; //2 byte
         public byte[] DestinationPort; //2 byte
-        public byte[] SequenceNumber; //4 byte
-        public byte[] AcknowledgmentNumber; //4 byte
+        public uint SequenceNumber; //4 byte
+        public uint AcknowledgmentNumber; //4 byte
         public byte DataOffset; //Last 4 bits are 0
         public byte ControlBits;
         public byte[] Window; //2 byte
         public byte[] Checksum; //2 byte
         public byte[] UrgentPointer; //2 byte
-        public byte[] Options; //4 byte
+        public byte[] Options;
         public byte[] Data; //Variable
     }
 }

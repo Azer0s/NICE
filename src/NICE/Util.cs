@@ -50,6 +50,49 @@ namespace NICE
             return (aByte & (1 << pos)) != 0;
         }
         
+        /// <summary>
+        /// uint a = 0;
+        /// a.Set(1, true);
+        /// a.Set(10, true);
+        /// for(var i = 0; i < 32; i++)
+        /// {
+        ///    Console.WriteLine(a.Get(i));
+        /// }
+        /// </summary>
+        /// <param name="aUint"></param>
+        /// <param name="pos"></param>
+        /// <param name="value"></param>
+        /// <exception cref="InvalidOperationException"></exception>
+        public static void Set(ref this uint aUint, int pos, bool value)
+        {
+            if (!(pos < 32 && pos > -1))
+            {
+                throw new InvalidOperationException($"Uint position {pos} out of range! (min 0 - max 31)");
+            }
+            
+            if (value)
+            {
+                //left-shift 1, then bitwise OR
+                aUint = (uint)(aUint | (1 << pos));
+            }
+            else
+            {
+                //left-shift 1, then take complement, then bitwise AND
+                aUint = (uint)(aUint & ~(1 << pos));
+            }
+        }
+ 
+        public static bool Get(this uint aUint, int pos)
+        {
+            if (!(pos < 32 && pos > -1))
+            {
+                throw new InvalidOperationException($"Uint position {pos} out of range! (min 0 - max 31)");
+            }
+            
+            //left-shift 1, then bitwise AND, then check for non-zero
+            return (aUint & (1 << pos)) != 0;
+        }
+        
         private static bool CompareBytes(byte[] bytes, byte first, byte second)
         {
             if (bytes.Length != 2)
