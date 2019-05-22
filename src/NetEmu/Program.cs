@@ -95,7 +95,7 @@ namespace NetEmu
             pc1[ETH01].Disconnect();
             pc2[ETH01].Disconnect();
 
-            Console.ReadKey();
+            //Console.ReadKey();
         }
     }
 }
