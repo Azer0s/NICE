@@ -10,6 +10,9 @@ using NICE.Layer3;
 
 namespace NICE.Layer2
 {
+    /// <summary>
+    /// IEEE 802.3
+    /// </summary>
     public class EthernetFrame
     {
         public byte[] Preamble { get; } = {0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA};
