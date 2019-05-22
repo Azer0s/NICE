@@ -39,6 +39,7 @@ using NICE;
 using NICE.Hardware;
 using NICE.Layer2;
 using NICE.Layer3;
+using NICE.Layer4;
 
 Vlan.Register(1, "DEFAULT");
 
