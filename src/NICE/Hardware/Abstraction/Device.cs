@@ -2,17 +2,19 @@
 // ReSharper disable MemberCanBePrivate.Global
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using NICE.Layer2;
 // ReSharper disable InconsistentNaming
 
 namespace NICE.Hardware.Abstraction
 {
-    public abstract class Device
+    public abstract class Device : IEnumerable<(string name, EthernetPort port)>
     {
         private readonly Dictionary<string, EthernetPort> _ports = new Dictionary<string, EthernetPort>();
 
         public readonly string Hostname;
+        public bool PowerOn = true;
         protected readonly Func<string, Action<EthernetPort>> OnConnect;
         protected readonly Func<string, Action<EthernetPort>> OnDisconnect;
         
@@ -39,6 +41,12 @@ namespace NICE.Hardware.Abstraction
             {
                 OnDisconnect = onDisconnect;
             }
+
+            if (Global.Devices.ContainsKey(Hostname))
+            {
+                throw new Exception("A device with the same hostname already exists!");
+            }
+            Global.Devices[Hostname] = this;
         }
 
         public EthernetPort this[string name]
@@ -55,12 +63,31 @@ namespace NICE.Hardware.Abstraction
 
                 _ports[name].OnReceive(bytes =>
                 {
+                    if (!PowerOn)
+                    {
+                        Log.Error(Hostname, "This device is turned off and can't receive frames!");
+                        return;
+                    }
+                    
                     var frame = EthernetFrame.FromBytes(bytes);
                     OnReceive(frame, _ports[name]);
                 });
                 
                 return _ports[name];
             }
+        }
+
+        public IEnumerator<(string name, EthernetPort port)> GetEnumerator()
+        {
+            foreach (var (key, value) in _ports)
+            {
+                yield return (key, value);
+            }
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
     }
 }

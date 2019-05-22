@@ -17,6 +17,7 @@ namespace NICE.Hardware
         private readonly Action<EthernetPort> _onConnectAction;
         private readonly Action<EthernetPort> _onDisconnectAction;
         private readonly Device _device;
+        public ref readonly string ConnectedToHostname => ref _connectedTo._device.Hostname;
 
         public static EthernetPort CreateMock(byte[] mac, string name, Action<byte[]> onReceive)
         {
@@ -55,7 +56,7 @@ namespace NICE.Hardware
 
         public void Disconnect()
         {
-            Log.Info(_device.Hostname, $"Disconnecting {Name} from {_connectedTo.Name} on {_connectedTo._device.Hostname}");
+            Log.Info(_device.Hostname, $"Disconnecting {Name} from {_connectedTo.Name} on {ConnectedToHostname}");
             _onDisconnectAction(_connectedTo);
             _connectedTo._onDisconnectAction(this);
             _connectedTo._connectedTo = null;
@@ -67,15 +68,53 @@ namespace NICE.Hardware
             _onReceiveAction(bytes);
         }
 
-        public void Send(byte[] bytes)
+        public void Send(byte[] bytes,  bool sendSync, bool log = true)
         {
-            _connectedTo.Receive(bytes);
+            if (!_device.PowerOn)
+            {
+                Log.Error(_device.Hostname, "This device is turned off and can't send frames!");
+                return;
+            }
+            
+            Global.Operations++;
+            if (log)
+            {
+                Log.Trace(_device.Hostname, $"Sending bytes from {Name} to {_connectedTo.Name} on {ConnectedToHostname}");
+            }
+
+            var action = new Action(() =>
+            {
+                try
+                {
+                    _connectedTo.Receive(bytes);
+                }
+                catch (Exception e)
+                {
+                    Log.Error(_device.Hostname, e);
+                }
+                Global.Operations--;
+            });
+
+            if (!sendSync)
+            {
+                action();
+            }
+            else
+            {
+                //KIND OF VERY EXPERIMENTAL
+                Task.Run(action);
+            }
         }
 
-        public void Send(EthernetFrame frame)
+        public void Send(EthernetFrame frame, bool sendSync)
         {
             Log.Trace(_device.Hostname, $"Sending Ethernet frame to {frame.Dst.ToMACAddressString()} from port {Name}");
-            Send(frame.GetBytes());
+            Send(frame.GetBytes(), sendSync, false);
+        }
+
+        public void SendSync(EthernetFrame frame)
+        {
+            Send(frame, false);
         }
 
         public void OnReceive(Action<byte[]> action)

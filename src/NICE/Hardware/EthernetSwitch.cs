@@ -38,23 +38,26 @@ namespace NICE.Hardware
                     frame.Tag = _switchPortInfos[port.Name].Vlan ?? Vlan.Get(1);
                     frame.FCS = Util.GetFCS(frame);
                 }
-                
-                if (!(MACTable.Any(a => a.Key.SequenceEqual(frame.Tag)) 
-                      && MACTable
-                          .Where(a => a.Key.SequenceEqual(frame.Tag))
-                          .Select(a => a.Value).FirstOr(new Dictionary<byte[], string>())
-                            .Any(a => a.Key.SequenceEqual(frame.Src))))
+
+                lock (MACTable)
                 {
-                    Log.Warn(Hostname, $"Unknown MAC Address {frame.Src.ToMACAddressString()} for VLAN {frame.Tag.ToMACAddressString()}");
-                    Log.Debug(Hostname, $"Adding MAC Address {frame.Src.ToMACAddressString()} to MAC Address table for VLAN {frame.Tag.ToMACAddressString()}...");
-
-                    if (!MACTable.Any(a => a.Key.SequenceEqual(frame.Tag)))
+                    if (!(MACTable.Any(a => a.Key.SequenceEqual(frame.Tag)) 
+                          && MACTable
+                              .Where(a => a.Key.SequenceEqual(frame.Tag))
+                              .Select(a => a.Value).FirstOr(new Dictionary<byte[], string>())
+                              .Any(a => a.Key.SequenceEqual(frame.Src))))
                     {
-                        MACTable[frame.Tag] = new Dictionary<byte[], string>();
-                    }
+                        Log.Warn(Hostname, $"Unknown MAC Address {frame.Src.ToMACAddressString()} for VLAN {frame.Tag.ToMACAddressString()}");
+                        Log.Debug(Hostname, $"Adding MAC Address {frame.Src.ToMACAddressString()} to MAC Address table for VLAN {frame.Tag.ToMACAddressString()}...");
 
-                    var id = MACTable.Where(a => a.Key.SequenceEqual(frame.Tag)).Select(a => a.Key).First();
-                    MACTable[id].Add(frame.Src, port.Name);
+                        if (!MACTable.Any(a => a.Key.SequenceEqual(frame.Tag)))
+                        {
+                            MACTable[frame.Tag] = new Dictionary<byte[], string>();
+                        }
+
+                        var id = MACTable.Where(a => a.Key.SequenceEqual(frame.Tag)).Select(a => a.Key).First();
+                        MACTable[id].Add(frame.Src, port.Name);
+                    }
                 }
 
                 var dstPort = string.Empty;
@@ -79,12 +82,12 @@ namespace NICE.Hardware
                     
                     foreach (var s in dstPorts)
                     {
-                        base[s].Send(frame);
+                        base[s].Send(frame, true);
                     }
                 }
                 else
                 {
-                    base[dstPort].Send(frame);
+                    base[dstPort].Send(frame, true);
                 }
             };
         }

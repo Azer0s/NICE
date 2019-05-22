@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using NICE;
 using NICE.Hardware;
 using NICE.Layer2;
@@ -13,7 +14,7 @@ namespace NetEmu
         static readonly string FA01 = "fa0/1";
         static readonly string FA02 = "fa0/2";
         
-        static void Main()
+        static async Task Main()
         {
             Log.SetLevel(Log.Level.TRACE, Log.Groups.SHOW);
             Vlan.Register(1, "DEFAULT");
@@ -73,15 +74,25 @@ namespace NetEmu
             //Set the ports from switch to switch to trunk
             sw1.SetPort(FA02, EthernetSwitch.AccessMode.TRUNK, null);
             sw2.SetPort(FA02, EthernetSwitch.AccessMode.TRUNK, null);
+
+            //Log.Group("Current state");
+            //Log.PrintState();
             
             //Learn MAC Addresses
             Log.Group("Learn MAC Addresses");
-            pc1[ETH01].Send(new EthernetFrame(Constants.ETHERNET_BROADCAST_PORT, pc1[ETH01], null, EtherType.IPv4, new RawLayer3Packet(new byte[100]), false));
-            pc2[ETH01].Send(new EthernetFrame(Constants.ETHERNET_BROADCAST_PORT, pc2[ETH01], null, EtherType.IPv4, new RawLayer3Packet(new byte[100]), false));
+            pc1[ETH01].SendSync(new EthernetFrame(Constants.ETHERNET_BROADCAST_PORT, pc1[ETH01], null, EtherType.IPv4, new RawLayer3Packet(new byte[100]), false));
+            //Wait for all sending operations to be finished (you don't HAVE to wait...I just prefer doing so, cause the log is more readable)
+            //This is necessary cause even tho you send this frame synchronously, all the connected devices create new tasks for incoming frames 
+            await Global.WaitForOperationsFinished();
+            
+            pc2[ETH01].SendSync(new EthernetFrame(Constants.ETHERNET_BROADCAST_PORT, pc2[ETH01], null, EtherType.IPv4, new RawLayer3Packet(new byte[100]), false));
+            await Global.WaitForOperationsFinished();
             
             Log.Group("Send Ethernet frame over learned ports");
-            pc1[ETH01].Send(new EthernetFrame(pc2[ETH01], pc1[ETH01], null, EtherType.IPv4, new RawLayer3Packet(new byte[100]), false));
+            pc1[ETH01].SendSync(new EthernetFrame(pc2[ETH01], pc1[ETH01], null, EtherType.IPv4, new RawLayer3Packet(new byte[100]), false));
+            await Global.WaitForOperationsFinished();
             
+            pc1[ETH01].Disconnect();
             pc2[ETH01].Disconnect();
 
             //Console.ReadKey();
