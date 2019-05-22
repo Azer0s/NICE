@@ -13,6 +13,7 @@ The Network Interface Communication Emulator (or NICE) is a C# framework which a
   - [x] Ethernet
   - [x] VLAN
   - [x] Switching
+  - [x] Async Ethernet frames
 - [ ] Layer 3
   - [ ] IPv4
   - [ ] ARP
