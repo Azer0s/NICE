@@ -13,6 +13,7 @@ The Network Interface Communication Emulator (or NICE) is a C# framework which a
   - [x] Ethernet
   - [x] VLAN
   - [x] Switching
+  - [x] Async Ethernet frames
 - [ ] Layer 3
   - [ ] IPv4
   - [ ] ARP
@@ -38,6 +39,7 @@ using NICE;
 using NICE.Hardware;
 using NICE.Layer2;
 using NICE.Layer3;
+using NICE.Layer4;
 
 Vlan.Register(1, "DEFAULT");
 
@@ -90,6 +92,16 @@ sw2.SetPort(FA01, EthernetSwitch.AccessMode.ACCESS, Vlan.Get(1));
 sw1.SetPort(FA02, EthernetSwitch.AccessMode.TRUNK, null);
 sw2.SetPort(FA02, EthernetSwitch.AccessMode.TRUNK, null);
 
-pc1[ETH01].Send(new EthernetFrame(Constants.ETHERNET_BROADCAST_PORT, pc1[ETH01], null, EtherType.IPv4, new RawLayer3Packet(new byte[100]), false));
+//Learn MAC Addresses
+pc1[ETH01].SendSync(new EthernetFrame(Constants.ETHERNET_BROADCAST_PORT, pc1[ETH01], null, EtherType.IPv4, new RawLayer3Packet(new byte[100]), false));
+//Wait for all sending operations to be finished (you don't HAVE to wait...I just prefer doing so, cause the log is more readable)
+//This is necessary cause even tho you send this frame synchronously, all the connected devices create new tasks for incoming frames 
+await Global.WaitForOperationsFinished();
 
+pc2[ETH01].SendSync(new EthernetFrame(Constants.ETHERNET_BROADCAST_PORT, pc2[ETH01], null, EtherType.IPv4, new RawLayer3Packet(new byte[100]), false));
+await Global.WaitForOperationsFinished();
+
+//Send Ethernet frame over learned ports
+pc1[ETH01].SendAsync(new EthernetFrame(pc2[ETH01], pc1[ETH01], null, EtherType.IPv4, new RawLayer3Packet(new byte[100]), false));
+await Global.WaitForOperationsFinished();
 ```
