@@ -20,6 +20,36 @@ namespace NICE
             return string.Join(":", bytes.Select(a => a.ToString("X2")));
         }
         
+        public static void Set(ref this byte aByte, int pos, bool value)
+        {
+            if (!(pos < 8 && pos > -1))
+            {
+                throw new InvalidOperationException($"Byte position {pos} out of range! (min 0 - max 7)");
+            }
+            
+            if (value)
+            {
+                //left-shift 1, then bitwise OR
+                aByte = (byte)(aByte | (1 << pos));
+            }
+            else
+            {
+                //left-shift 1, then take complement, then bitwise AND
+                aByte = (byte)(aByte & ~(1 << pos));
+            }
+        }
+ 
+        public static bool Get(this byte aByte, int pos)
+        {
+            if (!(pos < 8 && pos > -1))
+            {
+                throw new InvalidOperationException($"Byte position {pos} out of range! (min 0 - max 7)");
+            }
+            
+            //left-shift 1, then bitwise AND, then check for non-zero
+            return (aByte & (1 << pos)) != 0;
+        }
+        
         private static bool CompareBytes(byte[] bytes, byte first, byte second)
         {
             if (bytes.Length != 2)

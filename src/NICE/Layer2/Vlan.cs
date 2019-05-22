@@ -32,7 +32,11 @@ namespace NICE.Layer2
             byte b0 = (byte)nr,
                 b1 = (byte)(nr>>8);
 
-            return new []{(byte)(b1 & 0b0001_1111), b0};
+            b1.Set(7, false);
+            b1.Set(6, false);
+            b1.Set(5, false);
+            
+            return new []{b1, b0};
         }
     }
 }
