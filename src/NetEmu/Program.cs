@@ -89,13 +89,13 @@ namespace NetEmu
             await Global.WaitForOperationsFinished();
             
             Log.Group("Send Ethernet frame over learned ports");
-            pc1[ETH01].SendSync(new EthernetFrame(pc2[ETH01], pc1[ETH01], null, EtherType.IPv4, new RawLayer3Packet(new byte[100]), false));
+            pc1[ETH01].SendAsync(new EthernetFrame(pc2[ETH01], pc1[ETH01], null, EtherType.IPv4, new RawLayer3Packet(new byte[100]), false));
             await Global.WaitForOperationsFinished();
             
             pc1[ETH01].Disconnect();
             pc2[ETH01].Disconnect();
 
-            //Console.ReadKey();
+            Console.ReadKey();
         }
     }
 }

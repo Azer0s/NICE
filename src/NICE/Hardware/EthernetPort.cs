@@ -117,6 +117,11 @@ namespace NICE.Hardware
             Send(frame, false);
         }
 
+        public void SendAsync(EthernetFrame frame)
+        {
+            Send(frame, true);
+        }
+
         public void OnReceive(Action<byte[]> action)
         {
             _onReceiveAction = action;
