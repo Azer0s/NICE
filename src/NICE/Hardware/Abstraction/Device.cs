@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using NICE.Foundation;
 using NICE.Layer2;
 // ReSharper disable InconsistentNaming
 

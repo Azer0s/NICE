@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using NICE.Foundation;
 using NICE.Hardware.Abstraction;
 using NICE.Layer2;
 // ReSharper disable InconsistentNaming
@@ -109,7 +110,7 @@ namespace NICE.Hardware
         public void Send(EthernetFrame frame, bool sendAsync)
         {
             Log.Trace(_device.Hostname, $"Sending Ethernet frame to {frame.Dst.ToMACAddressString()} from port {Name}");
-            Send(frame.GetBytes(), sendAsync, false);
+            Send(frame.ToBytes(), sendAsync, false);
         }
 
         public void SendSync(EthernetFrame frame)

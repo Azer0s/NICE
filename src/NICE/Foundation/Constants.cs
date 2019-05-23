@@ -1,7 +1,8 @@
 using NICE.Hardware;
+
 // ReSharper disable InconsistentNaming
 
-namespace NICE
+namespace NICE.Foundation
 {
     public static class Constants
     {

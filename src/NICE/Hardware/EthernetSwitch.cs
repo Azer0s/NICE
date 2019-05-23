@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata;
+using NICE.Foundation;
 using NICE.Hardware.Abstraction;
 using NICE.Layer2;
 

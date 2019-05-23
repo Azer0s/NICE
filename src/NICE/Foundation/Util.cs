@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NICE.Layer2;
+
 // ReSharper disable InconsistentNaming
 
-namespace NICE
+namespace NICE.Foundation
 {
     public static class Util
     {
@@ -120,6 +121,8 @@ namespace NICE
                     return new[] {(byte)0x08, (byte)0x00};
                 case EtherType.ARP:
                     return new[] {(byte)0x08, (byte)0x06};
+                case EtherType.NONE:
+                    return new byte[2];
             }
             
             throw new ArgumentOutOfRangeException(nameof(etherType), etherType, null);
@@ -142,7 +145,7 @@ namespace NICE
 
         public static byte[] GetFCS(EthernetFrame ethernetFrame)
         {
-            return GetFCS(ethernetFrame.GetBytes());
+            return GetFCS(ethernetFrame.ToBytes());
         }
 
         private static readonly uint[] crctab =

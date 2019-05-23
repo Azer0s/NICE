@@ -1,9 +1,8 @@
 using System;
-using System.Drawing;
 
 // ReSharper disable InconsistentNaming
 
-namespace NICE
+namespace NICE.Foundation
 {
     public static class Log
     {

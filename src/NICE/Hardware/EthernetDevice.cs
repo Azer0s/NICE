@@ -1,4 +1,5 @@
 using System.Linq;
+using NICE.Foundation;
 using NICE.Hardware.Abstraction;
 
 namespace NICE.Hardware

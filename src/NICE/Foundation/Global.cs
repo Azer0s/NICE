@@ -1,9 +1,8 @@
 using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 using NICE.Hardware.Abstraction;
 
-namespace NICE
+namespace NICE.Foundation
 {
     public static class Global
     {
