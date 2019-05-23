@@ -13,6 +13,7 @@ namespace NICE.Layer2
 {
     /// <summary>
     /// IEEE 802.3
+    /// https://networkengineering.stackexchange.com/questions/5300/what-is-the-difference-between-ethernet-ii-and-802-3-ethernet
     /// </summary>
     public class EthernetFrame : IByteable<EthernetFrame>
     {
