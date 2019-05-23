@@ -1,11 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
-using NICE;
+﻿using System.Threading.Tasks;
 using NICE.Foundation;
 using NICE.Hardware;
 using NICE.Layer2;
 using NICE.Layer3;
-using NICE.Layer4;
 
 namespace NetEmu
 {

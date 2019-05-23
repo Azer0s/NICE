@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Metadata;
 using NICE.Foundation;
 using NICE.Hardware.Abstraction;
 using NICE.Layer2;
@@ -86,7 +85,7 @@ namespace NICE.Hardware
                     //Send to all ports except for source port
                     //Send to all access ports in the same VLAN
                     //Send to all trunk ports
-                    var dstPorts = _switchPortInfos.Where(a => a.Key != port.Name && (a.Value.Vlan.SequenceEqual(frame.Tag) || a.Value.Mode == AccessMode.TRUNK)).Select(a => a.Key);
+                    var dstPorts = _switchPortInfos.Where(a => a.Key != port.Name && (a.Value.Vlan.SequenceEqual(frame.Tag) || a.Value.Mode == AccessMode.TRUNK)).Select(a => a.Key).ToList();
 
                     if (!dstPorts.Any())
                     {

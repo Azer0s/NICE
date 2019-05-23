@@ -1,6 +1,6 @@
 namespace NICE.Abstraction
 {
-    public interface Byteable<T>
+    public interface IByteable<out T>
     {
         T FromBytes(byte[] bytes);
         byte[] ToBytes();

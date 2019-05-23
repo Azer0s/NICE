@@ -1,5 +1,5 @@
 using System;
-
+// ReSharper disable ReturnValueOfPureMethodIsNotUsed
 // ReSharper disable InconsistentNaming
 
 namespace NICE.Foundation

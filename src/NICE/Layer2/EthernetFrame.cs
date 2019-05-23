@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using NICE.Abstraction;
 using NICE.Foundation;
 using NICE.Hardware;
@@ -15,7 +14,7 @@ namespace NICE.Layer2
     /// <summary>
     /// IEEE 802.3
     /// </summary>
-    public class EthernetFrame : Byteable<EthernetFrame>
+    public class EthernetFrame : IByteable<EthernetFrame>
     {
         public byte[] Preamble { get; } = {0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA};
         public byte SFD { get; } = BitConverter.GetBytes(0b10101011)[0];
@@ -30,7 +29,7 @@ namespace NICE.Layer2
 
         public byte[] FCS { get; set; }
 
-        EthernetFrame Byteable<EthernetFrame>.FromBytes(byte[] bytes)
+        EthernetFrame IByteable<EthernetFrame>.FromBytes(byte[] bytes)
         {
             return FromBytes(bytes);
         }

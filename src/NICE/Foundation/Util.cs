@@ -2,8 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NICE.Layer2;
-
 // ReSharper disable InconsistentNaming
+// ReSharper disable InvalidXmlDocComment
 
 namespace NICE.Foundation
 {

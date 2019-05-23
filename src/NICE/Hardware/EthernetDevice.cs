@@ -1,6 +1,7 @@
 using System.Linq;
 using NICE.Foundation;
 using NICE.Hardware.Abstraction;
+// ReSharper disable UnusedVariable
 
 namespace NICE.Hardware
 {

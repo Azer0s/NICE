@@ -1,13 +1,12 @@
-// ReSharper disable InconsistentNaming
-
 using System.Collections.Generic;
 using System.Linq;
 using NICE.Abstraction;
+// ReSharper disable InconsistentNaming
 // ReSharper disable MemberCanBePrivate.Global
 
 namespace NICE.Layer2.STP
 {
-    public class SNAPFrame : Byteable<SNAPFrame>
+    public class SNAPFrame : IByteable<SNAPFrame>
     {
         public byte[] SNAP { get; set; } //5 bytes
         public byte[] Data { get; set; }
@@ -24,7 +23,7 @@ namespace NICE.Layer2.STP
             return snap;
         }
         
-        SNAPFrame Byteable<SNAPFrame>.FromBytes(byte[] bytes)
+        SNAPFrame IByteable<SNAPFrame>.FromBytes(byte[] bytes)
         {
             return FromBytes(bytes);
         }

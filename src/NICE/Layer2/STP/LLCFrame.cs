@@ -10,7 +10,7 @@ namespace NICE.Layer2.STP
     /// <summary>
     /// 802.2 LLC Frame
     /// </summary>
-    public class LLCFrame : Byteable<LLCFrame>
+    public class LLCFrame : IByteable<LLCFrame>
     {
         public byte[] LLC { get; set; } //3 byte
         public byte[] Data { get; set; }
@@ -27,7 +27,7 @@ namespace NICE.Layer2.STP
             return llc;
         }
 
-        LLCFrame Byteable<LLCFrame>.FromBytes(byte[] bytes)
+        LLCFrame IByteable<LLCFrame>.FromBytes(byte[] bytes)
         {
             return FromBytes(bytes);
         }
