@@ -19,6 +19,16 @@ namespace NICE
         {
             return string.Join(":", bytes.Select(a => a.ToString("X2")));
         }
+
+        public static ushort ToUshort(this byte[] bytes)
+        {
+            if (bytes.Length != 2)
+            {
+                throw new ArgumentException("Expected a byte array of size 2!", nameof(bytes));
+            }
+
+            return (ushort)(bytes[1] + (bytes[0] << 8));
+        }
         
         public static void Set(ref this byte aByte, int pos, bool value)
         {

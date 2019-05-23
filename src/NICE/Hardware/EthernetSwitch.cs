@@ -31,6 +31,19 @@ namespace NICE.Hardware
             
             OnReceive = (frame, port) =>
             {
+                if (frame.Type.ToUshort() <= 1500 )
+                {
+                    //Ok...so apparently, an Ethernet 2 frame is constructed the same way a normal Ethernet Frame is
+                    //The only difference is in the Type field
+                    //In Ethernet 2 this is 2 bytes which, in decimal, is >= 1536
+                    //And in Ethernet <= 1500
+                    //We also expect this frame to be untagged
+                    //https://networkengineering.stackexchange.com/questions/5300/what-is-the-difference-between-ethernet-ii-and-802-3-ethernet
+                    
+                    //TODO: Handle STP BPDU
+                    return;
+                }
+                
                 //If an untagged frame comes in, tag it
                 if (!frame.IsTagged)
                 {
