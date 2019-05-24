@@ -76,6 +76,8 @@ namespace NICE.Hardware
                 return;
             }
             
+            //TODO: Handle blocked STP ports, handle STP designate ports
+            
             Global.Operations++;
             if (log)
             {

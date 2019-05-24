@@ -93,6 +93,10 @@ namespace NetEmu
             pc1[ETH01].Disconnect();
             pc2[ETH01].Disconnect();
 
+            pc1.Shutdown();
+            pc2.Shutdown();
+            
+            Log.PrintState();
             //Console.ReadKey();
         }
     }

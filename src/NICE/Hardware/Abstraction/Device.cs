@@ -15,13 +15,36 @@ namespace NICE.Hardware.Abstraction
         private readonly Dictionary<string, EthernetPort> _ports = new Dictionary<string, EthernetPort>();
 
         public readonly string Hostname;
-        public bool PowerOn = true;
+        //TODO: Should I make this default to false? Does it make any sense for the end-user to manually start up a device?
+        //TODO: It *might* be sensible (connect first, setup first, etc) but on the other hand it just makes things more tedious
+        //TODO: Following idea: I'll introduce two settings in Global. One for port auto init and one for Device auto startup.
+        //If the user wants devices to auto startup => Global.SetDeviceAutoStartUp(true)
+        //If the user wants ports to auto init => Global.SetPortAutoInit(true)
+        public bool PowerOn { get; private set; } = true;
         protected readonly Func<string, Action<EthernetPort>> OnConnect;
         protected readonly Func<string, Action<EthernetPort>> OnDisconnect;
+        protected readonly Action OnStartUp;
+        protected readonly Action OnShutdown;
         
         protected Action<EthernetFrame, EthernetPort> OnReceive;
+
+        public void StartUp()
+        {
+            Log.Info(Hostname, "Device is starting up...");
+            OnStartUp();
+            PowerOn = true;
+            Log.Debug(Hostname, "Device start up complete!");
+        }
+
+        public void Shutdown()
+        {
+            Log.Info(Hostname, "Device is shutting down...");
+            OnShutdown();
+            PowerOn = false;
+            Log.Debug(Hostname, "Device shutdown complete!");
+        }
         
-        protected Device(string hostname, Action<EthernetFrame, EthernetPort> onReceive, Func<string, Action<EthernetPort>> onConnect = null, Func<string, Action<EthernetPort>> onDisconnect = null)
+        protected Device(string hostname, Action<EthernetFrame, EthernetPort> onReceive, Action onStartUp = null, Action onShutdown = null, Func<string, Action<EthernetPort>> onConnect = null, Func<string, Action<EthernetPort>> onDisconnect = null)
         {
             Hostname = hostname;
             OnReceive = onReceive;
@@ -43,6 +66,24 @@ namespace NICE.Hardware.Abstraction
                 OnDisconnect = onDisconnect;
             }
 
+            if (onStartUp == null) 
+            {
+                OnStartUp = () => {};
+            }
+            else
+            {
+                OnStartUp = onStartUp;
+            }
+
+            if (onShutdown == null) 
+            {
+                OnShutdown = () => {};
+            }
+            else
+            {
+                OnShutdown = onShutdown;
+            }
+            
             if (Global.Devices.ContainsKey(Hostname))
             {
                 throw new Exception("A device with the same hostname already exists!");
