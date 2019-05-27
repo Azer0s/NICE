@@ -10,7 +10,7 @@ using NICE.Layer2;
 
 namespace NICE.Hardware.Abstraction
 {
-    public abstract class Device : IEnumerable<(string name, EthernetPort port)>
+    public abstract class Device : Stateable, IEnumerable<(string name, EthernetPort port)>
     {
         private readonly Dictionary<string, EthernetPort> _ports = new Dictionary<string, EthernetPort>();
 

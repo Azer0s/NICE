@@ -8,7 +8,7 @@ using NICE.Layer2;
 
 namespace NICE.Hardware
 {
-    public class EthernetPort
+    public class EthernetPort : Stateable
     {
         public byte[] MACAddress { get; private set; }
         public readonly string Name;
