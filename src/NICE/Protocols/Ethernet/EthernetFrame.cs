@@ -44,7 +44,11 @@ namespace NICE.Protocols.Ethernet
         public static EthernetFrame FromBytes(byte[] bytes)
         {
             var byteList = bytes.ToList();
-            var fcs = Util.GetFCS(byteList.GetRange(0, bytes.Length - 4).ToArray());
+            
+            var bytesToCheck = byteList.GetRange(8, bytes.Length - 8 - 4);
+            bytesToCheck.AddRange(new byte[4]);
+            
+            var fcs = Util.GetFCS(bytesToCheck.ToArray());
             var bytesFcs = byteList.GetRange(byteList.Count - 4, 4);
 
             if (!fcs.SequenceEqual(bytesFcs))
