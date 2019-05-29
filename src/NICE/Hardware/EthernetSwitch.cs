@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NICE.API.Abstraction;
 using NICE.Foundation;
 using NICE.Hardware.Abstraction;
 using NICE.Layer2;
@@ -29,7 +30,7 @@ namespace NICE.Hardware
         {            
             Log.Info(Hostname, "Initializing switch...");
             
-            OnReceive = (frame, port) =>
+            /*OnReceive = (frame, port) =>
             {
                 if (frame.Type.ToUshort() <= 1500 )
                 {
@@ -60,8 +61,8 @@ namespace NICE.Hardware
                               .Select(a => a.Value).FirstOr(new Dictionary<byte[], string>())
                               .Any(a => a.Key.SequenceEqual(frame.Src))))
                     {
-                        Log.Warn(Hostname, $"Unknown MAC Address {frame.Src.ToMACAddressString()} for VLAN {frame.Tag.ToMACAddressString()}");
-                        Log.Debug(Hostname, $"Adding MAC Address {frame.Src.ToMACAddressString()} to MAC Address table for VLAN {frame.Tag.ToMACAddressString()}...");
+                        Log.Warn(Hostname, $"Unknown MAC Address {frame.MacHeader.Src} for VLAN {frame.Tag.ToMACAddressString()}");
+                        Log.Debug(Hostname, $"Adding MAC Address {frame.MacHeader.Src} to MAC Address table for VLAN {frame.Tag.ToMACAddressString()}...");
 
                         if (!MACTable.Any(a => a.Key.SequenceEqual(frame.Tag)))
                         {
@@ -74,7 +75,7 @@ namespace NICE.Hardware
                 }
 
                 var dstPort = string.Empty;
-                if (!frame.Dst.SequenceEqual(Constants.ETHERNET_BROADCAST_ADDRESS))
+                if (frame.MacHeader.Dst != Constants.ETHERNET_BROADCAST_ADDRESS.Get())
                 {
                     dstPort = MACTable.Where(a => a.Key.SequenceEqual(frame.Tag) && a.Value.Any(b => b.Key.SequenceEqual(frame.Dst))).Select(a => a.Value.Where(b => b.Key.SequenceEqual(frame.Dst)).Select(b => b.Value).FirstOr(null)).FirstOr(null);
                 }
@@ -102,7 +103,7 @@ namespace NICE.Hardware
                 {
                     base[dstPort].Send(frame, true);
                 }
-            };
+            };*/
         }
         
         public new EthernetPort this[string name]
@@ -111,14 +112,14 @@ namespace NICE.Hardware
             {
                 if (!_switchPortInfos.ContainsKey(name))
                 {
-                    _switchPortInfos[name] = new SwitchPortInfo{Mode = AccessMode.ACCESS, Vlan = Vlan.Get(1)};
+                    _switchPortInfos[name] = new SwitchPortInfo{Mode = AccessMode.ACCESS, Vlan = Vlan.Get(1).Get()};
                 }
                 
                 return base[name];
             }
         }
 
-        public void SetPort(string port, AccessMode mode, byte[] vlan)
+        public void SetPort(string port, AccessMode mode, Option<byte[]> vlan)
         {
             Log.Info(Hostname, $"Setting port {port} to {mode.ToString().ToLower()} mode");
             if (mode == AccessMode.TRUNK)
@@ -131,14 +132,14 @@ namespace NICE.Hardware
 
             if (vlan != null)
             {
-                Log.Debug(Hostname, $"Accessing VLAN {vlan.ToMACAddressString()} on port {port}");
+                Log.Debug(Hostname, $"Accessing VLAN {vlan.Get().ToMACAddressString()} on port {port}");
             }
             else
             {
                 vlan = Vlan.Get(1);
             }
             
-            _switchPortInfos[port] = new SwitchPortInfo {Mode = mode, Vlan = vlan};
+            _switchPortInfos[port] = new SwitchPortInfo {Mode = mode, Vlan = vlan.Get()};
         }
     }
 }

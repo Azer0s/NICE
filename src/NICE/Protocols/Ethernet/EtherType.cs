@@ -1,4 +1,4 @@
-namespace NICE.Layer2
+namespace NICE.Protocols.Ethernet
 {
     /// <summary>
     /// IEEE 802.3

@@ -1,8 +1,11 @@
 using System;
 using System.Threading.Tasks;
+using NICE.API.Abstraction;
 using NICE.Foundation;
 using NICE.Hardware.Abstraction;
 using NICE.Layer2;
+using NICE.Protocols.Ethernet;
+
 // ReSharper disable InconsistentNaming
 // ReSharper disable MemberCanBePrivate.Global
 
@@ -27,6 +30,13 @@ namespace NICE.Hardware
             }
             
             return new EthernetPort(name, null,port => {}, port => {}){MACAddress = mac, _onReceiveAction = onReceive};
+        }
+
+        public static implicit operator Option<byte[]>(EthernetPort port)
+        {
+            var option = new Option<byte[]>();
+            option.Set(port.MACAddress);
+            return option;
         }
         
         public EthernetPort(string name, Device device, Action<EthernetPort> onConnect, Action<EthernetPort> onDisconnect)
@@ -110,7 +120,7 @@ namespace NICE.Hardware
 
         public void Send(EthernetFrame frame, bool sendAsync)
         {
-            Log.Trace(_device.Hostname, $"Sending Ethernet frame to {frame.Dst.ToMACAddressString()} from port {Name}");
+            Log.Trace(_device.Hostname, $"Sending Ethernet frame to {frame.MacHeader.Dst} from port {Name}");
             Send(frame.ToBytes(), sendAsync, false);
         }
 

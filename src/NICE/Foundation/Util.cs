@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NICE.Layer2;
+using NICE.Protocols.Ethernet;
+
 // ReSharper disable InconsistentNaming
 // ReSharper disable InvalidXmlDocComment
 

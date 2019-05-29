@@ -2,7 +2,8 @@
 using NICE.Foundation;
 using NICE.Hardware;
 using NICE.Layer2;
-using NICE.Layer3;
+using NICE.Protocols.Ethernet;
+using static NICE.API.Generators;
 
 namespace NetEmu
 {
@@ -78,16 +79,16 @@ namespace NetEmu
             
             //Learn MAC Addresses
             Log.Group("Learn MAC Addresses");
-            pc1[ETH01].SendSync(new EthernetFrame(Constants.ETHERNET_BROADCAST_PORT, pc1[ETH01], null, EtherType.IPv4, new RawLayer3Packet(new byte[100]), false));
+            pc1[ETH01].SendSync(Ethernet(Constants.ETHERNET_BROADCAST_ADDRESS, pc1[ETH01]) | Dot1Q(Vlan.Get(1)) | RawPacket(new byte[100]));
             //Wait for all sending operations to be finished (you don't HAVE to wait...I just prefer doing so, cause the log is more readable)
             //This is necessary cause even tho you send this frame synchronously, all the connected devices create new tasks for incoming frames 
             await Global.WaitForOperationsFinished();
             
-            pc2[ETH01].SendSync(new EthernetFrame(Constants.ETHERNET_BROADCAST_PORT, pc2[ETH01], null, EtherType.IPv4, new RawLayer3Packet(new byte[100]), false));
+            pc2[ETH01].SendSync(Ethernet(Constants.ETHERNET_BROADCAST_ADDRESS, pc2[ETH01]) | Dot1Q(Vlan.Get(1)) | RawPacket(new byte[100]));
             await Global.WaitForOperationsFinished();
             
             Log.Group("Send Ethernet frame over learned ports");
-            pc1[ETH01].SendAsync(new EthernetFrame(pc2[ETH01], pc1[ETH01], null, EtherType.IPv4, new RawLayer3Packet(new byte[100]), false));
+            pc1[ETH01].SendAsync(Ethernet(pc2[ETH01], pc1[ETH01]) | Dot1Q(Vlan.Get(1)) | RawPacket(new byte[100]));
             await Global.WaitForOperationsFinished();
             
             pc1[ETH01].Disconnect();
