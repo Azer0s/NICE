@@ -5,7 +5,8 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using NICE.Foundation;
-using NICE.Layer2;
+using NICE.Protocols.Ethernet;
+
 // ReSharper disable InconsistentNaming
 
 namespace NICE.Hardware.Abstraction
@@ -47,7 +48,16 @@ namespace NICE.Hardware.Abstraction
         protected Device(string hostname, Action<EthernetFrame, EthernetPort> onReceive, Action onStartUp = null, Action onShutdown = null, Func<string, Action<EthernetPort>> onConnect = null, Func<string, Action<EthernetPort>> onDisconnect = null)
         {
             Hostname = hostname;
-            OnReceive = onReceive;
+
+            if (onReceive == null)
+            {
+                OnReceive = (frame, port) => { };
+            }
+            else
+            {
+                OnReceive = onReceive;
+            }
+            
             if (onConnect == null)
             {
                 OnConnect = s => { return ethernetPort => {}; };

@@ -1,9 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using NICE.API.Abstraction;
+using NICE.API.Builder;
 using NICE.Foundation;
 using NICE.Hardware.Abstraction;
 using NICE.Layer2;
+using NICE.Protocols.Ethernet.Dot1Q;
+using NICE.Protocols.Ethernet.MAC;
 
 // ReSharper disable InconsistentNaming
 
@@ -19,19 +23,19 @@ namespace NICE.Hardware
         private struct SwitchPortInfo
         {
             public AccessMode Mode;
-            public byte[] Vlan;
+            public ushort Vlan;
         }
 
-        private readonly Dictionary<byte[] /*VLAN*/, Dictionary<byte[] /*MAC Address*/, string /*Port*/>> MACTable = new Dictionary<byte[], Dictionary<byte[], string>> ();
+        private readonly Dictionary<ushort /*VLAN*/, Dictionary<MACAddress /*MAC Address*/, string /*Port*/>> MACTable = new Dictionary<ushort, Dictionary<MACAddress, string>> ();
         private readonly Dictionary<string, SwitchPortInfo> _switchPortInfos = new Dictionary<string, SwitchPortInfo>();
         
         public EthernetSwitch(string name) : base(name,null)
         {            
             Log.Info(Hostname, "Initializing switch...");
-            
+
             OnReceive = (frame, port) =>
             {
-                if (frame.Type.ToUshort() <= 1500 )
+                if (frame.Data.Header.EtherType <= 1500 )
                 {
                     //Ok...so apparently, an Ethernet 2 frame is constructed the same way a normal Ethernet Frame is
                     //The only difference is in the Type field
@@ -45,38 +49,54 @@ namespace NICE.Hardware
                 }
                 
                 //If an untagged frame comes in, tag it
-                if (!frame.IsTagged)
+                if (!(frame.Data.Payload is Dot1QPDU))
                 {
-                    frame.IsTagged = true;
-                    frame.Tag = _switchPortInfos[port.Name].Vlan ?? Vlan.Get(1);
-                    frame.FCS = Util.GetFCS(frame);
+                    var type = frame.Data.Header.EtherType;
+                    var payload = frame.Data.Payload;
+                    
+                    var dot1q = new Dot1QPDU
+                    {
+                        Header = new Dot1QHeader
+                        {
+                            Type = type,
+                            VlanID = _switchPortInfos[port.Name].Vlan == 0 ? 
+                                    Vlan.Get(1).Get() 
+                                    : _switchPortInfos[port.Name].Vlan
+                        },
+                        Payload = payload
+                    };
+
+                    frame.Data.Payload = dot1q;
+                    frame.Data.Header.EtherType = 0x8100;
+                    
+                    frame.Data.FCS = Util.GetFCS(frame);
                 }
 
                 lock (MACTable)
                 {
-                    if (!(MACTable.Any(a => a.Key.SequenceEqual(frame.Tag)) 
+                    if (!(MACTable.Any(a => a.Key == ((Dot1QPDU)frame.Data.Payload).Header.VlanID) 
                           && MACTable
-                              .Where(a => a.Key.SequenceEqual(frame.Tag))
-                              .Select(a => a.Value).FirstOr(new Dictionary<byte[], string>())
-                              .Any(a => a.Key.SequenceEqual(frame.Src))))
+                              .Where(a => a.Key == ((Dot1QPDU)frame.Data.Payload).Header.VlanID)
+                              .Select(a => a.Value).FirstOr(new Dictionary<MACAddress, string>())
+                              .Any(a => a.Key == frame.Data.Header.Src)))
                     {
-                        Log.Warn(Hostname, $"Unknown MAC Address {frame.Src.ToMACAddressString()} for VLAN {frame.Tag.ToMACAddressString()}");
-                        Log.Debug(Hostname, $"Adding MAC Address {frame.Src.ToMACAddressString()} to MAC Address table for VLAN {frame.Tag.ToMACAddressString()}...");
+                        Log.Warn(Hostname, $"Unknown MAC Address {frame.Data.Header.Src} for VLAN {((Dot1QPDU) frame.Data.Payload).Header.VlanID.ToMACAddressString()}");
+                        Log.Debug(Hostname, $"Adding MAC Address {frame.Data.Header.Src} to MAC Address table for VLAN {((Dot1QPDU) frame.Data.Payload).Header.VlanID.ToMACAddressString()}...");
 
-                        if (!MACTable.Any(a => a.Key.SequenceEqual(frame.Tag)))
+                        if (MACTable.All(a => a.Key != ((Dot1QPDU) frame.Data.Payload).Header.VlanID))
                         {
-                            MACTable[frame.Tag] = new Dictionary<byte[], string>();
+                            MACTable[((Dot1QPDU)frame.Data.Payload).Header.VlanID] = new Dictionary<MACAddress, string>();
                         }
 
-                        var id = MACTable.Where(a => a.Key.SequenceEqual(frame.Tag)).Select(a => a.Key).First();
-                        MACTable[id].Add(frame.Src, port.Name);
+                        var id = MACTable.Where(a => a.Key == ((Dot1QPDU)frame.Data.Payload).Header.VlanID).Select(a => a.Key).First();
+                        MACTable[id].Add(frame.Data.Header.Src, port.Name);
                     }
                 }
 
                 var dstPort = string.Empty;
-                if (!frame.Dst.SequenceEqual(Constants.ETHERNET_BROADCAST_ADDRESS))
+                if (frame.Data.Header.Dst != Constants.ETHERNET_BROADCAST_ADDRESS.Get())
                 {
-                    dstPort = MACTable.Where(a => a.Key.SequenceEqual(frame.Tag) && a.Value.Any(b => b.Key.SequenceEqual(frame.Dst))).Select(a => a.Value.Where(b => b.Key.SequenceEqual(frame.Dst)).Select(b => b.Value).FirstOr(null)).FirstOr(null);
+                    dstPort = MACTable.Where(a => a.Key == ((Dot1QPDU)frame.Data.Payload).Header.VlanID && a.Value.Any(b => b.Key == frame.Data.Header.Dst)).Select(a => a.Value.Where(b => b.Key == frame.Data.Header.Dst).Select(b => b.Value).FirstOr(null)).FirstOr(null);
                 }
                                  
                 //Flooding
@@ -85,7 +105,7 @@ namespace NICE.Hardware
                     //Send to all ports except for source port
                     //Send to all access ports in the same VLAN
                     //Send to all trunk ports
-                    var dstPorts = _switchPortInfos.Where(a => a.Key != port.Name && (a.Value.Vlan.SequenceEqual(frame.Tag) || a.Value.Mode == AccessMode.TRUNK)).Select(a => a.Key).ToList();
+                    var dstPorts = _switchPortInfos.Where(a => a.Key != port.Name && (a.Value.Vlan == ((Dot1QPDU)frame.Data.Payload).Header.VlanID || a.Value.Mode == AccessMode.TRUNK)).Select(a => a.Key).ToList();
 
                     if (!dstPorts.Any())
                     {
@@ -111,14 +131,14 @@ namespace NICE.Hardware
             {
                 if (!_switchPortInfos.ContainsKey(name))
                 {
-                    _switchPortInfos[name] = new SwitchPortInfo{Mode = AccessMode.ACCESS, Vlan = Vlan.Get(1)};
+                    _switchPortInfos[name] = new SwitchPortInfo{Mode = AccessMode.ACCESS, Vlan = Vlan.Get(1).Get()};
                 }
                 
                 return base[name];
             }
         }
 
-        public void SetPort(string port, AccessMode mode, byte[] vlan)
+        public void SetPort(string port, AccessMode mode, Option<ushort> vlan)
         {
             Log.Info(Hostname, $"Setting port {port} to {mode.ToString().ToLower()} mode");
             if (mode == AccessMode.TRUNK)
@@ -131,14 +151,14 @@ namespace NICE.Hardware
 
             if (vlan != null)
             {
-                Log.Debug(Hostname, $"Accessing VLAN {vlan.ToMACAddressString()} on port {port}");
+                Log.Debug(Hostname, $"Accessing VLAN {vlan.Get()} on port {port}");
             }
             else
             {
                 vlan = Vlan.Get(1);
             }
             
-            _switchPortInfos[port] = new SwitchPortInfo {Mode = mode, Vlan = vlan};
+            _switchPortInfos[port] = new SwitchPortInfo {Mode = mode, Vlan = vlan.Get()};
         }
     }
 }

@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NICE.Layer2;
+using NICE.Protocols.Ethernet;
+
 // ReSharper disable InconsistentNaming
 // ReSharper disable InvalidXmlDocComment
 
@@ -16,6 +18,12 @@ namespace NICE.Foundation
             return alternate;
         }
 
+        public static string ToMACAddressString(this ushort sUshort)
+        {
+            var bytes = BitConverter.GetBytes(sUshort).Reverse();
+            return string.Join(":", bytes.Select(a => a.ToString("X2")));
+        }
+        
         public static string ToMACAddressString(this byte[] bytes)
         {
             return string.Join(":", bytes.Select(a => a.ToString("X2")));
@@ -61,6 +69,36 @@ namespace NICE.Foundation
             return (aByte & (1 << pos)) != 0;
         }
         
+        public static void Set(ref this ushort aUshort, int pos, bool value)
+        {
+            if (!(pos < 16 && pos > -1))
+            {
+                throw new InvalidOperationException($"Ushort position {pos} out of range! (min 0 - max 15)");
+            }
+            
+            if (value)
+            {
+                //left-shift 1, then bitwise OR
+                aUshort = (ushort)(aUshort | (1 << pos));
+            }
+            else
+            {
+                //left-shift 1, then take complement, then bitwise AND
+                aUshort = (ushort)(aUshort & ~(1 << pos));
+            }
+        }
+        
+        public static bool Get(this ushort aUshort, int pos)
+        {
+            if (!(pos < 16 && pos > -1))
+            {
+                throw new InvalidOperationException($"Ushort position {pos} out of range! (min 0 - max 15)");
+            }
+            
+            //left-shift 1, then bitwise AND, then check for non-zero
+            return (aUshort & (1 << pos)) != 0;
+        }
+        
         /// <summary>
         /// uint a = 0;
         /// a.Set(1, true);
@@ -103,49 +141,11 @@ namespace NICE.Foundation
             //left-shift 1, then bitwise AND, then check for non-zero
             return (aUint & (1 << pos)) != 0;
         }
-        
-        private static bool CompareBytes(byte[] bytes, byte first, byte second)
-        {
-            if (bytes.Length != 2)
-            {
-                throw new ArgumentException("Invalid byte array length!", nameof(bytes));
-            }
-            return bytes[0] == first && bytes[1] == second;
-        }
-        
-        public static byte[] GetBytesFromEtherType(EtherType etherType)
-        {
-            switch (etherType)
-            {
-                case EtherType.IPv4:
-                    return new[] {(byte)0x08, (byte)0x00};
-                case EtherType.ARP:
-                    return new[] {(byte)0x08, (byte)0x06};
-                case EtherType.NONE:
-                    return new byte[2];
-            }
-            
-            throw new ArgumentOutOfRangeException(nameof(etherType), etherType, null);
-        }
-
-        public static EtherType GetEtherTypeFromBytes(byte[] bytes)
-        {
-            if (CompareBytes(bytes, 0x08, 0x00))
-            {
-                return EtherType.IPv4;
-            }
-
-            if (CompareBytes(bytes, 0x08, 0x06))
-            {
-                return EtherType.ARP;
-            }
-            
-            throw new ArgumentOutOfRangeException(nameof(bytes), bytes, null);
-        }
 
         public static byte[] GetFCS(EthernetFrame ethernetFrame)
         {
-            return GetFCS(ethernetFrame.ToBytes());
+            var bytes = ethernetFrame.Data.ToBytes().ToList();
+            return GetFCS(bytes.GetRange(0, bytes.Count - 4).ToArray());
         }
 
         private static readonly uint[] crctab =
@@ -225,14 +225,7 @@ namespace NICE.Foundation
 
         public static byte[] GetFCS(byte[] bytes)
         {
-            var byteList = bytes.ToList();
-            //Remove preamble
-            byteList.RemoveRange(0,8);
-            
-            //Remove empty FCS bytes
-            byteList.RemoveRange(byteList.Count-4, 4);
-
-            return CRC32(byteList);
+            return CRC32(bytes.ToList());
         }
     }
 }
