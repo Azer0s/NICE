@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using NICE.API.Abstraction;
+using NICE.API.Builder;
 using NICE.Foundation;
 using NICE.Hardware.Abstraction;
 using NICE.Layer2;
@@ -120,16 +121,26 @@ namespace NICE.Hardware
 
         public void Send(EthernetFrame frame, bool sendAsync)
         {
-            Log.Trace(_device.Hostname, $"Sending Ethernet frame to {frame.MacHeader.Dst} from port {Name}");
+            Log.Trace(_device.Hostname, $"Sending Ethernet frame to {frame.Data.Header.Dst} from port {Name}");
             Send(frame.ToBytes(), sendAsync, false);
         }
 
-        public void SendSync(EthernetFrame frame)
+        public void Send(Ethernet frame, bool sendAsync)
+        {
+            if (!frame.Src.IsSet())
+            {
+                frame.Src = Option<byte[]>.Of(MACAddress);
+            }
+            
+            Send(frame.ToEthernetFrame(), sendAsync);
+        }
+        
+        public void SendSync(Ethernet frame)
         {
             Send(frame, false);
         }
 
-        public void SendAsync(EthernetFrame frame)
+        public void SendAsync(Ethernet frame)
         {
             Send(frame, true);
         }

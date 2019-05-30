@@ -34,5 +34,10 @@ namespace NICE.API.Abstraction
         {
             return IsSet() ? Get() : val;
         }
+
+        public static implicit operator Option<T>(T value)
+        {
+            return Of(value);
+        }
     }
 }

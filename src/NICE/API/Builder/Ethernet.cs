@@ -7,13 +7,13 @@ using NICE.Protocols.Ethernet;
 
 namespace NICE.API.Builder
 {
-    public class Ethernet : Predicateable<Ethernet>, IProtocol
+    public class Ethernet : Payloadable, IProtocol
     {
         public Option<byte[]> Src;
         public Option<byte[]> Dst;
 
-        private Option<byte[]> _etherType;
-        public Option<byte[]> EtherType
+        private Option<ushort> _etherType;
+        public Option<ushort> EtherType
         {
             get => _etherType;
             set
@@ -28,24 +28,6 @@ namespace NICE.API.Builder
                 }
             }
         }
-
-        private IProtocol _payload;
-        public IProtocol Payload
-        {
-            get => _payload;
-            set
-            {
-                if (Payload is Dot1Q dot1Q)
-                {
-                    dot1Q.Payload = value;
-                }
-                else
-                {
-                    _payload = value;
-                }
-            }
-        }
-
 
         public byte[] ToBytes()
         {
@@ -67,14 +49,11 @@ namespace NICE.API.Builder
             var list = new List<byte>();
             list.AddRange(Dst.Get());
             list.AddRange(Src.Get());
-            list.AddRange(EtherType.Get());
+            list.AddRange(BitConverter.GetBytes(EtherType.Get()).Reverse());
             list.AddRange(Payload.ToBytes());
-            list.AddRange(new byte[4]);
             
             var fcs = Util.GetFCS(list.ToArray());
-            
-            list.RemoveRange(list.Count - 4, 4);
-            
+                        
             list.AddRange(fcs);
             
             return list.ToArray();

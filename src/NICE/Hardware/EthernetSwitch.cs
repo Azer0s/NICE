@@ -20,7 +20,7 @@ namespace NICE.Hardware
         private struct SwitchPortInfo
         {
             public AccessMode Mode;
-            public byte[] Vlan;
+            public ushort Vlan;
         }
 
         private readonly Dictionary<byte[] /*VLAN*/, Dictionary<byte[] /*MAC Address*/, string /*Port*/>> MACTable = new Dictionary<byte[], Dictionary<byte[], string>> ();
@@ -29,7 +29,12 @@ namespace NICE.Hardware
         public EthernetSwitch(string name) : base(name,null)
         {            
             Log.Info(Hostname, "Initializing switch...");
-            
+
+            OnReceive = (frame, port) =>
+            {
+                Console.WriteLine("");
+            };
+
             /*OnReceive = (frame, port) =>
             {
                 if (frame.Type.ToUshort() <= 1500 )
@@ -119,7 +124,7 @@ namespace NICE.Hardware
             }
         }
 
-        public void SetPort(string port, AccessMode mode, Option<byte[]> vlan)
+        public void SetPort(string port, AccessMode mode, Option<ushort> vlan)
         {
             Log.Info(Hostname, $"Setting port {port} to {mode.ToString().ToLower()} mode");
             if (mode == AccessMode.TRUNK)
@@ -132,7 +137,7 @@ namespace NICE.Hardware
 
             if (vlan != null)
             {
-                Log.Debug(Hostname, $"Accessing VLAN {vlan.Get().ToMACAddressString()} on port {port}");
+                Log.Debug(Hostname, $"Accessing VLAN {vlan.Get()} on port {port}");
             }
             else
             {

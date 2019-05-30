@@ -63,6 +63,36 @@ namespace NICE.Foundation
             return (aByte & (1 << pos)) != 0;
         }
         
+        public static void Set(ref this ushort aUshort, int pos, bool value)
+        {
+            if (!(pos < 16 && pos > -1))
+            {
+                throw new InvalidOperationException($"Ushort position {pos} out of range! (min 0 - max 15)");
+            }
+            
+            if (value)
+            {
+                //left-shift 1, then bitwise OR
+                aUshort = (ushort)(aUshort | (1 << pos));
+            }
+            else
+            {
+                //left-shift 1, then take complement, then bitwise AND
+                aUshort = (ushort)(aUshort & ~(1 << pos));
+            }
+        }
+        
+        public static bool Get(this ushort aUshort, int pos)
+        {
+            if (!(pos < 16 && pos > -1))
+            {
+                throw new InvalidOperationException($"Ushort position {pos} out of range! (min 0 - max 15)");
+            }
+            
+            //left-shift 1, then bitwise AND, then check for non-zero
+            return (aUshort & (1 << pos)) != 0;
+        }
+        
         /// <summary>
         /// uint a = 0;
         /// a.Set(1, true);
@@ -147,7 +177,7 @@ namespace NICE.Foundation
 
         public static byte[] GetFCS(EthernetFrame ethernetFrame)
         {
-            return GetFCS(ethernetFrame.ToBytes());
+            return GetFCS(ethernetFrame.Data.ToBytes());
         }
 
         private static readonly uint[] crctab =
@@ -227,14 +257,7 @@ namespace NICE.Foundation
 
         public static byte[] GetFCS(byte[] bytes)
         {
-            var byteList = bytes.ToList();
-            //Remove preamble
-            byteList.RemoveRange(0,8);
-            
-            //Remove empty FCS bytes
-            byteList.RemoveRange(byteList.Count-4, 4);
-
-            return CRC32(byteList);
+            return CRC32(bytes.ToList());
         }
     }
 }

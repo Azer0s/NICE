@@ -20,9 +20,7 @@ namespace NICE.Protocols.Ethernet
         public byte[] Preamble { get; } = {0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA, 0xAA};
         public byte SFD { get; } = BitConverter.GetBytes(0b10101011)[0];
 
-        public MACHeader MacHeader;
-        public IMACCompatible Payload;
-        public byte[] FCS;
+        public MACPDU Data;
 
         EthernetFrame IByteable<EthernetFrame>.FromBytes(byte[] bytes)
         {
@@ -34,39 +32,19 @@ namespace NICE.Protocols.Ethernet
             var list = new List<byte>();
             list.AddRange(Preamble);
             list.Add(SFD);
-            list.AddRange(MacHeader.ToBytes());
-            list.AddRange(Payload.ToBytes());
-            list.AddRange(FCS);
+            list.AddRange(Data.ToBytes());
             
             return list.ToArray();
         }
         
         public static EthernetFrame FromBytes(byte[] bytes)
         {
-            var byteList = bytes.ToList();
-            
-            var bytesToCheck = byteList.GetRange(8, bytes.Length - 8 - 4);
-            bytesToCheck.AddRange(new byte[4]);
-            
-            var fcs = Util.GetFCS(bytesToCheck.ToArray());
-            var bytesFcs = byteList.GetRange(byteList.Count - 4, 4);
-
-            if (!fcs.SequenceEqual(bytesFcs))
-            {
-                throw new Exception("FCS must match!");
-            }
-            
-            var header = MACHeader.FromBytes(bytes.Take(14).ToArray());
-            var payload = byteList.GetRange(14, byteList.Count - 18).ToArray();
-            var protocol = MACRegistry.GetProtocol(header.EtherType);
+            var macpdu = MACPDU.FromBytes(bytes.Skip(8).ToArray());
 
             var frame = new EthernetFrame
             {
-                MacHeader = header,
-                Payload = protocol.FromBytes(payload),
-                FCS = fcs
+                Data = macpdu
             };
-
             return frame;
         }
     }

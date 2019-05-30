@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using NICE.API.Abstraction;
 using NICE.Foundation;
 using NICE.Hardware;
 using NICE.Layer2;

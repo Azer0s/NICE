@@ -24,11 +24,11 @@ namespace NICE.API
             Vlans.Add((nr, name));
         }
 
-        public static Option<byte[]> Get(int nr)
+        public static Option<ushort> Get(int nr)
         {
             if (nr == 0)
             {
-                return Option<byte[]>.Of(new byte[2]);
+                return Option<ushort>.Of((ushort) 0);
             }
 
             if (!Vlans.Exists(tuple => tuple.nr == nr))
@@ -43,7 +43,9 @@ namespace NICE.API
             b1.Set(6, false);
             b1.Set(5, false);
 
-            return Option<byte[]>.Of( new[] {b1, b0});
+            ushort vlanId = BitConverter.ToUInt16(new[] {b0, b1});
+
+            return Option<byte[]>.Of(vlanId);
         }
     }
 }

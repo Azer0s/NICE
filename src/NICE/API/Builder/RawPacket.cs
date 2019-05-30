@@ -9,7 +9,7 @@ namespace NICE.API.Builder
         public static Ethernet operator |(Ethernet frame, RawPacket packet)
         {
             frame.Payload = packet;
-            frame.EtherType = Option<byte[]>.Of(new byte[]{0x88, 0xB5});
+            frame.EtherType = Option<ushort>.Of((ushort) 0x88b5);
             return frame;
         }
 

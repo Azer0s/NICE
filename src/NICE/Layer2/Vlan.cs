@@ -9,7 +9,7 @@ namespace NICE.Layer2
             API.Vlan.Register(nr, name);
         }
 
-        public static Option<byte[]> Get(int nr)
+        public static Option<ushort> Get(int nr)
         {
             return API.Vlan.Get(nr);
         }

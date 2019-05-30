@@ -12,8 +12,7 @@ namespace NICE.API
 
         public static Option<byte[]> Of(string address)
         {
-            var bytes = address.Split(":").Select(Byte.Parse).ToArray();
-            return Option<byte[]>.Of(bytes);
+            return address.Split(":").Select(Byte.Parse).ToArray();
         }
     }
 }
