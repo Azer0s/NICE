@@ -18,6 +18,12 @@ namespace NICE.Foundation
             return alternate;
         }
 
+        public static string ToMACAddressString(this ushort sUshort)
+        {
+            var bytes = BitConverter.GetBytes(sUshort).Reverse();
+            return string.Join(":", bytes.Select(a => a.ToString("X2")));
+        }
+        
         public static string ToMACAddressString(this byte[] bytes)
         {
             return string.Join(":", bytes.Select(a => a.ToString("X2")));
@@ -135,49 +141,11 @@ namespace NICE.Foundation
             //left-shift 1, then bitwise AND, then check for non-zero
             return (aUint & (1 << pos)) != 0;
         }
-        
-        private static bool CompareBytes(byte[] bytes, byte first, byte second)
-        {
-            if (bytes.Length != 2)
-            {
-                throw new ArgumentException("Invalid byte array length!", nameof(bytes));
-            }
-            return bytes[0] == first && bytes[1] == second;
-        }
-        
-        public static byte[] GetBytesFromEtherType(EtherType etherType)
-        {
-            switch (etherType)
-            {
-                case EtherType.IPv4:
-                    return new[] {(byte)0x08, (byte)0x00};
-                case EtherType.ARP:
-                    return new[] {(byte)0x08, (byte)0x06};
-                case EtherType.NONE:
-                    return new byte[2];
-            }
-            
-            throw new ArgumentOutOfRangeException(nameof(etherType), etherType, null);
-        }
-
-        public static EtherType GetEtherTypeFromBytes(byte[] bytes)
-        {
-            if (CompareBytes(bytes, 0x08, 0x00))
-            {
-                return EtherType.IPv4;
-            }
-
-            if (CompareBytes(bytes, 0x08, 0x06))
-            {
-                return EtherType.ARP;
-            }
-            
-            throw new ArgumentOutOfRangeException(nameof(bytes), bytes, null);
-        }
 
         public static byte[] GetFCS(EthernetFrame ethernetFrame)
         {
-            return GetFCS(ethernetFrame.Data.ToBytes());
+            var bytes = ethernetFrame.Data.ToBytes().ToList();
+            return GetFCS(bytes.GetRange(0, bytes.Count - 4).ToArray());
         }
 
         private static readonly uint[] crctab =

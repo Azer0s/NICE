@@ -38,7 +38,7 @@ namespace NICE.Protocols.Ethernet.MAC
             var list = new List<byte>();
             list.AddRange(Dst.ToBytes());
             list.AddRange(Src.ToBytes());
-            list.AddRange(BitConverter.GetBytes(EtherType));
+            list.AddRange(BitConverter.GetBytes(EtherType).Reverse());
             return list.ToArray();
         }
     }

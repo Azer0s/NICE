@@ -1,9 +1,7 @@
 ﻿using System.Threading.Tasks;
-using NICE.API.Abstraction;
 using NICE.Foundation;
 using NICE.Hardware;
 using NICE.Layer2;
-using NICE.Protocols.Ethernet;
 using static NICE.API.Generators;
 
 namespace NetEmu
