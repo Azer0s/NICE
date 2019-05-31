@@ -83,7 +83,7 @@ namespace NetEmu
             /*
              * The API can be used with constructors (like this)
              */
-            pc1[ETH01].SendSync(new Ethernet(Constants.ETHERNET_BROADCAST_PORT, pc1[ETH01], Vlan.Get(1), new RawPacket(new byte[100])));
+            pc1[ETH01].SendSync(new EthernetFrame(Constants.ETHERNET_BROADCAST_PORT, pc1[ETH01], Vlan.Get(1), new RawPacket(new byte[100])));
             
             //Wait for all sending operations to be finished (you don't HAVE to wait...I just prefer doing so, cause the log is more readable)
             //This is necessary cause even tho you send this frame synchronously, all the connected devices create new tasks for incoming frames 
