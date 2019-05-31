@@ -110,7 +110,7 @@ pc1[ETH01].SendSync(new Ethernet(Constants.ETHERNET_BROADCAST_PORT, pc1[ETH01], 
 await Global.WaitForOperationsFinished();
 
 /*
- * Or like this (with a static methods and a scapy-esque construction method)
+ * Or like this (with static methods and a scapy-esque construction pipeline)
  */
 pc2[ETH01].SendSync(Ethernet(Constants.ETHERNET_BROADCAST_ADDRESS, pc2[ETH01]) | Dot1Q(Vlan.Get(1)) | RawPacket(new byte[100]));
 await Global.WaitForOperationsFinished();
