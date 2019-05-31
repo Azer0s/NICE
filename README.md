@@ -36,11 +36,13 @@ The Network Interface Communication Emulator (or NICE) is a C# framework which a
 
 ```cs
 using System;
-using NICE;
+using NICE.Foundation;
 using NICE.Hardware;
 using NICE.Layer2;
 using NICE.Layer3;
 using NICE.Layer4;
+
+using static NICE.API.Generators;
 
 Log.SetLevel(Log.Level.TRACE, Log.Groups.SHOW);
 Vlan.Register(1, "DEFAULT");
