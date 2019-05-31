@@ -4,7 +4,6 @@ using NICE.API.Abstraction;
 using NICE.API.Builder;
 using NICE.Foundation;
 using NICE.Hardware.Abstraction;
-using NICE.Layer2;
 using NICE.Protocols.Ethernet;
 
 // ReSharper disable InconsistentNaming

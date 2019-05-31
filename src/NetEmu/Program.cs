@@ -2,6 +2,7 @@
 using NICE.Foundation;
 using NICE.Hardware;
 using NICE.Layer2;
+using NICE.Layer3;
 using static NICE.API.Generators;
 
 namespace NetEmu
@@ -78,11 +79,19 @@ namespace NetEmu
             
             //Learn MAC Addresses
             Log.Group("Learn MAC Addresses");
-            pc1[ETH01].SendSync(Ethernet(Constants.ETHERNET_BROADCAST_ADDRESS, pc1[ETH01]) | Dot1Q(Vlan.Get(1)) | RawPacket(new byte[100]));
+            
+            /*
+             * The API can be used with constructors (like this)
+             */
+            pc1[ETH01].SendSync(new Ethernet(Constants.ETHERNET_BROADCAST_PORT, pc1[ETH01], Vlan.Get(1), new RawPacket(new byte[100])));
+            
             //Wait for all sending operations to be finished (you don't HAVE to wait...I just prefer doing so, cause the log is more readable)
             //This is necessary cause even tho you send this frame synchronously, all the connected devices create new tasks for incoming frames 
             await Global.WaitForOperationsFinished();
             
+            /*
+             * Or like this (with a static methods and a scapy-esque construction method)
+             */
             pc2[ETH01].SendSync(Ethernet(Constants.ETHERNET_BROADCAST_ADDRESS, pc2[ETH01]) | Dot1Q(Vlan.Get(1)) | RawPacket(new byte[100]));
             await Global.WaitForOperationsFinished();
             
