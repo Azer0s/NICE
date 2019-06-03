@@ -1,5 +1,4 @@
-﻿
-// ReSharper disable MemberCanBePrivate.Global
+﻿// ReSharper disable MemberCanBePrivate.Global
 
 using System;
 using System.Collections;
@@ -16,35 +15,13 @@ namespace NICE.Hardware.Abstraction
         private readonly Dictionary<string, EthernetPort> _ports = new Dictionary<string, EthernetPort>();
 
         public readonly string Hostname;
-        //TODO: Should I make this default to false? Does it make any sense for the end-user to manually start up a device?
-        //TODO: It *might* be sensible (connect first, setup first, etc) but on the other hand it just makes things more tedious
-        //TODO: Following idea: I'll introduce two settings in Global. One for port auto init and one for Device auto startup.
-        //If the user wants devices to auto startup => Global.SetDeviceAutoStartUp(true)
-        //If the user wants ports to auto init => Global.SetPortAutoInit(true)
-        public bool PowerOn { get; private set; } = true;
         protected readonly Func<string, Action<EthernetPort>> OnConnect;
         protected readonly Func<string, Action<EthernetPort>> OnDisconnect;
-        protected readonly Action OnStartUp;
         protected readonly Action OnShutdown;
-        
+        protected readonly Action OnStartUp;
+
         protected Action<EthernetFrame, EthernetPort> OnReceive;
 
-        public void StartUp()
-        {
-            Log.Info(Hostname, "Device is starting up...");
-            OnStartUp();
-            PowerOn = true;
-            Log.Debug(Hostname, "Device start up complete!");
-        }
-
-        public void Shutdown()
-        {
-            Log.Info(Hostname, "Device is shutting down...");
-            OnShutdown();
-            PowerOn = false;
-            Log.Debug(Hostname, "Device shutdown complete!");
-        }
-        
         protected Device(string hostname, Action<EthernetFrame, EthernetPort> onReceive, Action onStartUp = null, Action onShutdown = null, Func<string, Action<EthernetPort>> onConnect = null, Func<string, Action<EthernetPort>> onDisconnect = null)
         {
             Hostname = hostname;
@@ -57,10 +34,10 @@ namespace NICE.Hardware.Abstraction
             {
                 OnReceive = onReceive;
             }
-            
+
             if (onConnect == null)
             {
-                OnConnect = s => { return ethernetPort => {}; };
+                OnConnect = s => { return ethernetPort => { }; };
             }
             else
             {
@@ -69,37 +46,45 @@ namespace NICE.Hardware.Abstraction
 
             if (onDisconnect == null)
             {
-                OnDisconnect = s => { return ethernetPort => {}; };
+                OnDisconnect = s => { return ethernetPort => { }; };
             }
             else
             {
                 OnDisconnect = onDisconnect;
             }
 
-            if (onStartUp == null) 
+            if (onStartUp == null)
             {
-                OnStartUp = () => {};
+                OnStartUp = () => { };
             }
             else
             {
                 OnStartUp = onStartUp;
             }
 
-            if (onShutdown == null) 
+            if (onShutdown == null)
             {
-                OnShutdown = () => {};
+                OnShutdown = () => { };
             }
             else
             {
                 OnShutdown = onShutdown;
             }
-            
+
             if (Global.Devices.ContainsKey(Hostname))
             {
                 throw new Exception("A device with the same hostname already exists!");
             }
+
             Global.Devices[Hostname] = this;
         }
+
+        //TODO: Should I make this default to false? Does it make any sense for the end-user to manually start up a device?
+        //TODO: It *might* be sensible (connect first, setup first, etc) but on the other hand it just makes things more tedious
+        //TODO: Following idea: I'll introduce two settings in Global. One for port auto init and one for Device auto startup.
+        //If the user wants devices to auto startup => Global.SetDeviceAutoStartUp(true)
+        //If the user wants ports to auto init => Global.SetPortAutoInit(true)
+        public bool PowerOn { get; private set; } = true;
 
         public EthernetPort this[string name]
         {
@@ -109,7 +94,7 @@ namespace NICE.Hardware.Abstraction
                 {
                     return _ports[name];
                 }
-                
+
                 Log.Debug(Hostname, $"Creating new port {name}...");
                 _ports[name] = new EthernetPort(name, this, OnConnect(name), OnDisconnect(name));
 
@@ -120,11 +105,11 @@ namespace NICE.Hardware.Abstraction
                         Log.Error(Hostname, "This device is turned off and can't receive frames!");
                         return;
                     }
-                    
+
                     var frame = EthernetFrame.FromBytes(bytes);
                     OnReceive(frame, _ports[name]);
                 });
-                
+
                 return _ports[name];
             }
         }
@@ -140,6 +125,22 @@ namespace NICE.Hardware.Abstraction
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
+        }
+
+        public void StartUp()
+        {
+            Log.Info(Hostname, "Device is starting up...");
+            OnStartUp();
+            PowerOn = true;
+            Log.Debug(Hostname, "Device start up complete!");
+        }
+
+        public void Shutdown()
+        {
+            Log.Info(Hostname, "Device is shutting down...");
+            OnShutdown();
+            PowerOn = false;
+            Log.Debug(Hostname, "Device shutdown complete!");
         }
     }
 }

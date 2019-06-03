@@ -9,10 +9,10 @@ namespace NICE.API.Builder
 {
     public class Ethernet : Payloadable, IProtocol
     {
-        public Option<byte[]> Src;
-        public Option<byte[]> Dst;
-
         private Option<ushort> _etherType;
+        public Option<byte[]> Dst;
+        public Option<byte[]> Src;
+
         public Option<ushort> EtherType
         {
             get => _etherType;
@@ -35,27 +35,27 @@ namespace NICE.API.Builder
             {
                 throw new Exception("Src address is unset!");
             }
-            
+
             if (!Dst.IsSet())
             {
                 throw new Exception("Dst address is unset!");
             }
-            
+
             if (!EtherType.IsSet())
             {
                 throw new Exception("EtherType is unset!");
             }
-            
+
             var list = new List<byte>();
             list.AddRange(Dst.Get());
             list.AddRange(Src.Get());
             list.AddRange(BitConverter.GetBytes(EtherType.Get()).Reverse());
             list.AddRange(Payload.ToBytes());
-            
+
             var fcs = Util.GetFCS(list.ToArray());
-                        
+
             list.AddRange(fcs);
-            
+
             return list.ToArray();
         }
 
@@ -65,7 +65,7 @@ namespace NICE.API.Builder
             var bytes = preamble.ToList();
             bytes.Add(0xAB);
             bytes.AddRange(ToBytes());
-            
+
             return EthernetFrame.FromBytes(bytes.ToArray());
         }
 

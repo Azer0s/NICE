@@ -1,4 +1,5 @@
 using System;
+
 // ReSharper disable ReturnValueOfPureMethodIsNotUsed
 // ReSharper disable InconsistentNaming
 
@@ -6,25 +7,10 @@ namespace NICE.Foundation
 {
     public static class Log
     {
-        private static Level show_level = Level.TRACE;
-        private static Groups groups_level = Groups.SHOW;
-        
-        private static readonly object ConsoleWriterLock = new object();
-        
-        private static void Write(string hostname, Level level, string message, ConsoleColor color)
+        public enum Groups
         {
-            if (show_level > level)
-            {
-                return;
-            }
-            
-            lock(ConsoleWriterLock)
-            {
-                Console.Write($"[ {level.ToString().PadRight(10).Substring(0,5)} | {hostname} ] ");
-                Console.ForegroundColor = color;
-                Console.Write($"{message}\n");
-                Console.ResetColor();
-            }
+            SHOW,
+            HIDE
         }
 
         public enum Level
@@ -37,52 +23,67 @@ namespace NICE.Foundation
             FATAL = 5
         }
 
-        public enum Groups
+        private static Level show_level = Level.TRACE;
+        private static Groups groups_level = Groups.SHOW;
+
+        private static readonly object ConsoleWriterLock = new object();
+
+        private static void Write(string hostname, Level level, string message, ConsoleColor color)
         {
-            SHOW,
-            HIDE
+            if (show_level > level)
+            {
+                return;
+            }
+
+            lock (ConsoleWriterLock)
+            {
+                Console.Write($"[ {level.ToString().PadRight(10).Substring(0, 5)} | {hostname} ] ");
+                Console.ForegroundColor = color;
+                Console.Write($"{message}\n");
+                Console.ResetColor();
+            }
         }
 
         public static void Trace(string hostname, string message)
         {
             Write(hostname, Level.TRACE, message, ConsoleColor.Cyan);
         }
-        
+
         public static void Debug(string hostname, string message)
         {
             Write(hostname, Level.DEBUG, message, ConsoleColor.Blue);
         }
-        
+
         public static void Info(string hostname, string message)
         {
             Write(hostname, Level.INFO, message, ConsoleColor.Green);
         }
-        
+
         public static void Warn(string hostname, Exception e)
         {
             Write(hostname, Level.WARN, e.Message, ConsoleColor.DarkYellow);
         }
-        
+
         public static void Error(string hostname, Exception e)
         {
             Write(hostname, Level.ERROR, e.Message, ConsoleColor.Red);
         }
-        
+
         public static void Fatal(string hostname, Exception e)
         {
             Write(hostname, Level.FATAL, e.Message, ConsoleColor.DarkRed);
         }
-        
+
         public static void Warn(string hostname, string message)
         {
             Write(hostname, Level.WARN, message, ConsoleColor.DarkYellow);
         }
-        
+
         public static void Error(string hostname, string message)
         {
             Write(hostname, Level.ERROR, message, ConsoleColor.Red);
         }
-        
+
         public static void Fatal(string hostname, string message)
         {
             Write(hostname, Level.FATAL, message, ConsoleColor.DarkRed);
@@ -97,7 +98,7 @@ namespace NICE.Foundation
         public static void Group(string group)
         {
             if (groups_level != Groups.SHOW) return;
-            
+
             Console.ForegroundColor = ConsoleColor.Magenta;
             Console.WriteLine($"+++{group}+++");
             Console.ResetColor();
@@ -121,9 +122,9 @@ namespace NICE.Foundation
                     Console.Write(" INACTIVE ");
                     Console.ResetColor();
                 }
-                
+
                 Console.Write("] ");
-                
+
                 foreach (var valueTuple in keyValuePair.Value)
                 {
                     try
@@ -136,9 +137,9 @@ namespace NICE.Foundation
                         Console.Write($"\n     ({valueTuple.name} -> [DISCONNECT])");
                     }
                 }
-                
+
                 Console.WriteLine();
-            }            
+            }
         }
     }
 }

@@ -14,9 +14,10 @@ namespace NICE.Hardware.Abstraction
             {
                 if (_states.ContainsKey(typeof(T)))
                 {
-                    val = (T)_states[typeof(T)];
+                    val = (T) _states[typeof(T)];
                 }
             }
+
             return val;
         }
 

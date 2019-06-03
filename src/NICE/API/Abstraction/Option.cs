@@ -13,7 +13,7 @@ namespace NICE.API.Abstraction
             opt.Set(input);
             return opt;
         }
-        
+
         public bool IsSet()
         {
             return _set == Foundation.IsSet.Set;
@@ -29,7 +29,7 @@ namespace NICE.API.Abstraction
         {
             return _value;
         }
-        
+
         public T GetOr(T val)
         {
             return IsSet() ? Get() : val;

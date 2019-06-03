@@ -15,7 +15,7 @@ namespace NICE.Foundation
             {
                 while (Operations != 0)
                 {
-                }                
+                }
             });
         }
     }

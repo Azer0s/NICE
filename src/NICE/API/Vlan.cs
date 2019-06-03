@@ -13,7 +13,7 @@ namespace NICE.API
         {
             Register(0, string.Empty);
         }
-        
+
         public static void Register(int nr, string name)
         {
             if (Vlans.Exists(tuple => tuple.nr == nr && tuple.name == name))
@@ -43,9 +43,9 @@ namespace NICE.API
             b1.Set(6, false);
             b1.Set(5, false);
 
-            ushort vlanId = BitConverter.ToUInt16(new[] {b0, b1});
+            var vlanId = BitConverter.ToUInt16(new[] {b0, b1});
 
-            return Option<byte[]>.Of(vlanId);
+            return Option<ushort>.Of(vlanId);
         }
     }
 }

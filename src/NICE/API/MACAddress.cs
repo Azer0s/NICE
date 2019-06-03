@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using NICE.API.Abstraction;
 
@@ -12,7 +11,7 @@ namespace NICE.API
 
         public static Option<byte[]> Of(string address)
         {
-            return address.Split(":").Select(Byte.Parse).ToArray();
+            return address.Split(":").Select(byte.Parse).ToArray();
         }
     }
 }

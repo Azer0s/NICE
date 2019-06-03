@@ -1,4 +1,5 @@
 using NICE.Abstraction;
+
 // ReSharper disable InconsistentNaming
 
 namespace NICE.Protocols.Ethernet.MAC

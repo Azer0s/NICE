@@ -13,13 +13,22 @@ namespace NICE.Hardware
 {
     public class EthernetPort : Stateable
     {
-        public byte[] MACAddress { get; private set; }
-        public readonly string Name;
-        private Action<byte[]> _onReceiveAction;
-        private EthernetPort _connectedTo;
+        private readonly Device _device;
         private readonly Action<EthernetPort> _onConnectAction;
         private readonly Action<EthernetPort> _onDisconnectAction;
-        private readonly Device _device;
+        public readonly string Name;
+        private EthernetPort _connectedTo;
+        private Action<byte[]> _onReceiveAction;
+
+        public EthernetPort(string name, Device device, Action<EthernetPort> onConnect, Action<EthernetPort> onDisconnect)
+        {
+            _onConnectAction = onConnect;
+            _onDisconnectAction = onDisconnect;
+            _device = device;
+            Name = name;
+        }
+
+        public byte[] MACAddress { get; private set; }
         public ref readonly string ConnectedToHostname => ref _connectedTo._device.Hostname;
 
         public static EthernetPort CreateMock(byte[] mac, string name, Action<byte[]> onReceive)
@@ -28,8 +37,8 @@ namespace NICE.Hardware
             {
                 throw new Exception("Invalid MAC Address length!");
             }
-            
-            return new EthernetPort(name, null,port => {}, port => {}){MACAddress = mac, _onReceiveAction = onReceive};
+
+            return new EthernetPort(name, null, port => { }, port => { }) {MACAddress = mac, _onReceiveAction = onReceive};
         }
 
         public static implicit operator Option<byte[]>(EthernetPort port)
@@ -38,18 +47,10 @@ namespace NICE.Hardware
             option.Set(port.MACAddress);
             return option;
         }
-        
-        public EthernetPort(string name, Device device, Action<EthernetPort> onConnect, Action<EthernetPort> onDisconnect)
-        {
-            _onConnectAction = onConnect;
-            _onDisconnectAction = onDisconnect;
-            _device = device;
-            Name = name;
-        }
-        
+
         public void Init()
         {
-            var vendorBytes = new byte[]{0x10,0x14,0x20};
+            var vendorBytes = new byte[] {0x10, 0x14, 0x20};
             var guid = Guid.NewGuid().ToByteArray();
             MACAddress = new[] {vendorBytes[0], vendorBytes[1], vendorBytes[2], guid[0], guid[1], guid[2]};
             Log.Trace(_device.Hostname, $"Initialized port {Name} with MAC Address {MACAddress.ToMACAddressString()}");
@@ -78,16 +79,16 @@ namespace NICE.Hardware
             _onReceiveAction(bytes);
         }
 
-        public void Send(byte[] bytes,  bool sendAsync, bool log = true)
+        public void Send(byte[] bytes, bool sendAsync, bool log = true)
         {
             if (!_device.PowerOn)
             {
                 Log.Error(_device.Hostname, "This device is turned off and can't send frames!");
                 return;
             }
-            
+
             //TODO: Handle blocked STP ports, handle STP designate ports
-            
+
             Global.Operations++;
             if (log)
             {
@@ -104,6 +105,7 @@ namespace NICE.Hardware
                 {
                     Log.Error(_device.Hostname, e);
                 }
+
                 Global.Operations--;
             });
 
@@ -130,10 +132,10 @@ namespace NICE.Hardware
             {
                 frame.Src = Option<byte[]>.Of(MACAddress);
             }
-            
+
             Send(frame.ToEthernetFrame(), sendAsync);
         }
-        
+
         public void SendSync(Ethernet frame)
         {
             Send(frame, false);

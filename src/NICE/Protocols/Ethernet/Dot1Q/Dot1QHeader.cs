@@ -1,19 +1,42 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using NICE.Abstraction;
 using NICE.Foundation;
-using NICE.Protocols.Ethernet.MAC;
 
 namespace NICE.Protocols.Ethernet.Dot1Q
 {
     public class Dot1QHeader : IByteable<Dot1QHeader>
     {
-        public byte Priority;
         public bool Flag;
-        public ushort VlanID;
+        public byte Priority;
         public ushort Type;
+        public ushort VlanID;
+
+        Dot1QHeader IByteable<Dot1QHeader>.FromBytes(byte[] bytes)
+        {
+            return FromBytes(bytes);
+        }
+
+        public byte[] ToBytes()
+        {
+            var bytes = new List<byte>();
+
+            var firstByte = (byte) (Priority << 5);
+            firstByte.Set(4, Flag);
+
+            firstByte.Set(3, VlanID.Get(11));
+            firstByte.Set(2, VlanID.Get(10));
+            firstByte.Set(1, VlanID.Get(9));
+            firstByte.Set(0, VlanID.Get(8));
+
+            bytes.Add(firstByte);
+            bytes.Add((byte) VlanID);
+
+            bytes.AddRange(BitConverter.GetBytes(Type).Reverse());
+
+            return bytes.ToArray();
+        }
 
 
         public static Dot1QHeader FromBytes(byte[] bytes)
@@ -35,31 +58,6 @@ namespace NICE.Protocols.Ethernet.Dot1Q
             header.Type = bytes.Skip(2).Take(2).ToArray().ToUshort();
 
             return header;
-        }
-
-        Dot1QHeader IByteable<Dot1QHeader>.FromBytes(byte[] bytes)
-        {
-            return FromBytes(bytes);
-        }
-
-        public byte[] ToBytes()
-        {
-            var bytes = new List<byte>();
-
-            var firstByte = (byte) (Priority << 5);
-            firstByte.Set(4, Flag);
-            
-            firstByte.Set(3, VlanID.Get(11));
-            firstByte.Set(2, VlanID.Get(10));
-            firstByte.Set(1, VlanID.Get(9));
-            firstByte.Set(0, VlanID.Get(8));
-            
-            bytes.Add(firstByte);
-            bytes.Add((byte) VlanID);
-            
-            bytes.AddRange(BitConverter.GetBytes(Type).Reverse());
-
-            return bytes.ToArray();
         }
     }
 }

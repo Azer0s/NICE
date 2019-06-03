@@ -11,7 +11,7 @@ namespace NICE.API
             {
                 dst = new Option<byte[]>();
             }
-            
+
             if (src == null)
             {
                 src = new Option<byte[]>();
@@ -21,7 +21,7 @@ namespace NICE.API
             {
                 etherType = new Option<ushort>();
             }
-            
+
             return new Ethernet {Src = src, Dst = dst, EtherType = etherType};
         }
 
@@ -46,8 +46,8 @@ namespace NICE.API
             {
                 etherType = new Option<ushort>();
             }
-            
-            return new Dot1Q{VlanId = vlanId, Priority = priority, Flag = flag, EtherType = etherType};
+
+            return new Dot1Q {VlanId = vlanId, Priority = priority, Flag = flag, EtherType = etherType};
         }
 
         public static RawPacket RawPacket(byte[] bytes)
