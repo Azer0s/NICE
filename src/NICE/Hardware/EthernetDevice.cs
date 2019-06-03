@@ -10,6 +10,7 @@ namespace NICE.Hardware
         public EthernetDevice(string name) : base(name, null)
         {
             Log.Info(Hostname, "Initializing end device...");
+            
             OnReceive = (frame, port) =>
             {
                 if (frame.Data.Header.Dst == Constants.ETHERNET_BROADCAST_ADDRESS.Get())
@@ -27,6 +28,8 @@ namespace NICE.Hardware
 
                 //TODO: Handle all the layer 3 protocols
             };
+            
+            PostConstruct();
         }
     }
 }

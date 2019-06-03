@@ -8,6 +8,18 @@ namespace NICE.Foundation
     {
         public static int Operations = 0;
         public static Dictionary<string, Device> Devices { get; } = new Dictionary<string, Device>();
+        public static bool DeviceAutoStartup { get; private set; }
+        public static bool PortAutoInit { get; private set; }
+
+        public static void SetDeviceAutoStartup(bool value)
+        {
+            DeviceAutoStartup = value;
+        }
+
+        public static void SetPortAutoInit(bool value)
+        {
+            PortAutoInit = value;
+        }
 
         public static async Task WaitForOperationsFinished()
         {
@@ -18,5 +30,7 @@ namespace NICE.Foundation
                 }
             });
         }
+        
+        
     }
 }

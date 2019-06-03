@@ -46,6 +46,7 @@ using static NICE.API.Generators;
 
 Log.SetLevel(Log.Level.TRACE, Log.Groups.SHOW);
 Vlan.Register(1, "DEFAULT");
+Global.SetDeviceAutoStartup(true);
 
 /*
  * PC1 ---  eth0/1

@@ -79,13 +79,18 @@ namespace NICE.Hardware.Abstraction
             Global.Devices[Hostname] = this;
         }
 
-        //TODO: Should I make this default to false? Does it make any sense for the end-user to manually start up a device?
-        //TODO: It *might* be sensible (connect first, setup first, etc) but on the other hand it just makes things more tedious
-        //TODO: Following idea: I'll introduce two settings in Global. One for port auto init and one for Device auto startup.
         //If the user wants devices to auto startup => Global.SetDeviceAutoStartUp(true)
         //If the user wants ports to auto init => Global.SetPortAutoInit(true)
-        public bool PowerOn { get; private set; } = true;
+        public bool PowerOn { get; private set; }
 
+        protected void PostConstruct()
+        {
+            if (Global.DeviceAutoStartup)
+            {
+                StartUp();
+            }
+        }
+        
         public EthernetPort this[string name]
         {
             get
@@ -110,6 +115,11 @@ namespace NICE.Hardware.Abstraction
                     OnReceive(frame, _ports[name]);
                 });
 
+                if (Global.PortAutoInit)
+                {
+                    _ports[name].Init();
+                }
+                
                 return _ports[name];
             }
         }

@@ -17,7 +17,9 @@ namespace NetEmu
         {
             Log.SetLevel(Log.Level.TRACE, Log.Groups.SHOW);
             Vlan.Register(1, "DEFAULT");
-
+            Global.SetDeviceAutoStartup(true);
+            //Global.SetPortAutoInit(true);
+            
             /*
              * PC1 ---  eth0/1
              *       |

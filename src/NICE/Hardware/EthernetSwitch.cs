@@ -118,6 +118,8 @@ namespace NICE.Hardware
                     base[dstPort].Send(frame, true);
                 }
             };
+            
+            PostConstruct();
         }
 
         public new EthernetPort this[string name]
