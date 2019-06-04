@@ -94,7 +94,7 @@ namespace NetEmu
             /*
              * Or like this (with a static methods and a scapy-esque construction method)
              */
-            pc2[ETH01].SendSync(Ethernet(Constants.ETHERNET_BROADCAST_ADDRESS, pc2[ETH01]) | Dot1Q(Vlan.Get(1)) | RawPacket(new byte[100]));
+            pc2[ETH01].SendSync(Ethernet(Constants.ETHERNET_BROADCAST_ADDRESS, pc2[ETH01]) <- /*Yes...this is indeed valid C#*/ Dot1Q(Vlan.Get(1)) <- RawPacket(new byte[100]));
             await Global.WaitForOperationsFinished();
 
             Log.Group("Send Ethernet frame over learned ports");

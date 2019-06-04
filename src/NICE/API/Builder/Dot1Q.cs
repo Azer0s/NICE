@@ -55,7 +55,12 @@ namespace NICE.API.Builder
             return bytes.ToArray();
         }
 
-        public static Ethernet operator |(Ethernet frame, Dot1Q dot1Q)
+        public static Wrapped<Dot1Q> operator - (Dot1Q dot1Q)
+        {
+            return new Wrapped<Dot1Q> {Value = dot1Q};
+        }
+
+        public static Ethernet operator | (Ethernet frame, Dot1Q dot1Q)
         {
             frame.EtherType = (ushort) 0x8100;
             frame.Payload = dot1Q;

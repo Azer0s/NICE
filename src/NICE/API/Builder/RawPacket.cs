@@ -11,7 +11,12 @@ namespace NICE.API.Builder
             return Bytes;
         }
 
-        public static Ethernet operator |(Ethernet frame, RawPacket packet)
+        public static Wrapped<RawPacket> operator - (RawPacket rawPacket)
+        {
+            return new Wrapped<RawPacket> {Value = rawPacket};
+        }
+        
+        public static Ethernet operator | (Ethernet frame, RawPacket packet)
         {
             frame.Payload = packet;
             frame.EtherType = Option<ushort>.Of((ushort) 0x88b5);
