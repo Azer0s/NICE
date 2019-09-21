@@ -9,6 +9,4 @@ jobs:
     
     steps:
     - name: Build NICE
-      run: make nice
-    - name: Run demo project
-      run: make run
+      run: make
