@@ -7,13 +7,13 @@ using static NICE.API.Generators;
 
 namespace NetEmu
 {
-    internal static class Program
+    internal class Program
     {
         private static readonly string ETH01 = "eth0/1";
         private static readonly string FA01 = "fa0/1";
         private static readonly string FA02 = "fa0/2";
 
-        private static async Task Main()
+        protected virtual async Task Main()
         {
             Log.SetLevel(Log.Level.TRACE, Log.Groups.SHOW);
             Vlan.Register(1, "DEFAULT");
